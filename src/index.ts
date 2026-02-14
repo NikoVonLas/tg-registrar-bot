@@ -252,7 +252,15 @@ export default function setup(bot: Bot) {
   });
 
   bot.command("admin", async (ctx) => {
-    if (!ctx.from || !isAdmin(ctx.from.id)) {
+    if (!ctx.from) {
+      await ctx.reply("Debug: No ctx.from");
+      return;
+    }
+
+    const adminCheck = isAdmin(ctx.from.id);
+    await ctx.reply(`Debug: userId=${ctx.from.id}, isAdmin=${adminCheck}, BOT_OWNER_ID=${process.env.BOT_OWNER_ID}`);
+
+    if (!adminCheck) {
       await ctx.reply(i18n.t("noAccess"));
       return;
     }
