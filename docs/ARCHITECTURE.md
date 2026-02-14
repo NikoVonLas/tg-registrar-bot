@@ -175,7 +175,7 @@ interface Registration {
                                        ▼
                               ┌─────────────────┐
                               │ Save to storage │
-                              │ Show success ✅ │
+                              │ Show success  │
                               └─────────────────┘
 ```
 
@@ -204,10 +204,10 @@ Keyboards are generated on-demand per user interaction, not pre-cached. This kee
 **1. Initial Choice (2 buttons, vertical):**
 ```
 ┌─────────────────────────┐
-│ 📍 Share Location       │
+│  Share Location       │
 └─────────────────────────┘
 ┌─────────────────────────┐
-│ 🏙 Choose manually      │
+│  Choose manually      │
 └─────────────────────────┘
 ```
 
@@ -220,7 +220,7 @@ Keyboards are generated on-demand per user interaction, not pre-cached. This kee
 ├──────────────┴──────────────┤
 │ ...                         │
 ├─────────────────────────────┤
-│ 🔍 Find another city        │
+│  Find another city        │
 └─────────────────────────────┘
 ```
 
@@ -251,10 +251,10 @@ Keyboards are generated on-demand per user interaction, not pre-cached. This kee
 
 | Action | User | Admin |
 |--------|------|-------|
-| Register | ✅ (once) | ✅ |
-| View own registration | ✅ | ✅ |
-| View all registrations | ❌ | ✅ (`/stats`) |
-| Export data | ❌ | ✅ (`/export`) |
+| Register |  (once) |  |
+| View own registration |  |  |
+| View all registrations |  |  (`/stats`) |
+| Export data |  |  (`/export`) |
 
 ### Data Privacy
 - Stored data: public profile info only (user ID, username, first/last name, city)

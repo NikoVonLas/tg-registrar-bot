@@ -124,4 +124,4 @@ Do NOT open public issues for security vulnerabilities. Email maintainer directl
 
 By contributing, you agree that your contributions will be licensed under MIT License.
 
-Thank you! 🎉
+Thank you! 

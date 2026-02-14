@@ -19,11 +19,11 @@ Registration time: 14.02.2026, 12:34:56
 
 **If not registered:**
 ```
-🎉 Welcome to the event!
+ Welcome to the event!
 
 Please select your city:
-[📍 Share Location]
-[🏙 Choose Manually]
+[ Share Location]
+[ Choose Manually]
 ```
 
 ### `/help` - Show Help
@@ -40,11 +40,11 @@ Shows real-time registration statistics by city.
 
 **Response:**
 ```
-📊 Registration Statistics
+ Registration Statistics
 
-👥 Total registered: 42
+ Total registered: 42
 
-🏙 By cities:
+ By cities:
 • Moscow: 15
 • St. Petersburg: 8
 • Novosibirsk: 5
@@ -124,8 +124,8 @@ interface Stats {
 
 **Initial Choice:**
 ```
-[📍 Share Location]
-[🏙 Choose Manually]
+[ Share Location]
+[ Choose Manually]
 ```
 
 **Top-15 Cities (2 columns):**
@@ -133,7 +133,7 @@ interface Stats {
 [Moscow]     [St. Petersburg]
 [Novosibirsk][Yekaterinburg]
 ...
-[🔍 Find another city]
+[ Find another city]
 ```
 
 **Search Results (2 columns, max 20):**

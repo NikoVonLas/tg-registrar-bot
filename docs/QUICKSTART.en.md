@@ -81,7 +81,7 @@ npm run dev
 1. Open your bot in Telegram (using username from Step 1)
 2. Send command: `/start`
 3. Select your city
-4. You should see: "✅ Great! You're registered."
+4. You should see: " Great! You're registered."
 
 ### Test Admin Commands
 
@@ -104,7 +104,7 @@ npm run dev
 https://t.me/your_event_bot?start=event
 ```
 
-## Done! 🎉
+## Done! 
 
 Now:
 - Attendees scan QR → open bot → register
