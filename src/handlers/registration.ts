@@ -116,6 +116,9 @@ export function registerRegistrationHandlers(
       const botInfo = await ctx.api.getMe();
       const deepLink = `https://t.me/${botInfo.username}?start=${result.event.id}`;
 
+      // Escape only the bot username part for display
+      const displayLink = `https://t.me/${escapeMarkdown(botInfo.username || '')}?start=${result.event.id}`;
+
       // Generate and send QR code PDF with full event info
       try {
         logger.info('Generating QR code PDF for event:', {
@@ -129,7 +132,7 @@ export function registerRegistrationHandlers(
         await ctx.replyWithDocument(
           new InputFile(pdfBuffer, `event_${result.event.id}_qr.pdf`),
           {
-            caption: `✅ Мероприятие создано!\n\n📋 Название: ${escapeMarkdown(result.event.name)}\n\n🔗 Deep link:\n${escapeMarkdown(deepLink)}`,
+            caption: `✅ Мероприятие создано!\n\n📋 Название: ${escapeMarkdown(result.event.name)}\n\n🔗 Deep link:\n${displayLink}`,
             parse_mode: "Markdown"
           }
         );
