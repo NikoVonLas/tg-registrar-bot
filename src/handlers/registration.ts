@@ -1,16 +1,16 @@
 import { Bot, Context, InputFile } from "grammy";
-import { i18n } from "../i18n";
-import { logger } from "../logger";
-import { CB } from "../shared/callbacks";
-import { createTypoCorrectionKeyboard } from "../shared/keyboards";
-import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "../storage";
-import { UserStateManager } from "../shared/state";
-import { findClosestCity } from "../utils/levenshtein";
-import cities from "../data/cities.json";
-import { isAdmin } from "../shared/auth";
-import { handleEventCreationText } from "./events";
-import { generateQRCodePDF } from "../utils/qrcode";
-import { escapeMarkdown } from "../utils/markdown";
+import { i18n } from "@/i18n";
+import { log } from "@/utils/sdk-helpers";
+import { CB } from "@/shared/callbacks";
+import { createTypoCorrectionKeyboard } from "@/shared/keyboards";
+import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "@/storage";
+import { UserStateManager } from "@/shared/state";
+import { findClosestCity } from "@/utils/levenshtein";
+import cities from "@/data/cities.json";
+import { isAdmin } from "@/shared/auth";
+import { handleEventCreationText } from "@/handlers/events";
+import { generateQRCodePDF } from "@/utils/qrcode";
+import { escapeMarkdown } from "@/utils/markdown";
 
 async function handleCitySelection(
   ctx: Context,
@@ -28,7 +28,7 @@ async function handleCitySelection(
     lastName: ctx.from.last_name,
   });
 
-  logger.info('Registration completed:', {
+  log.info('Registration completed:', {
     userId: ctx.from.id,
     eventId,
     city
@@ -71,12 +71,12 @@ export function registerRegistrationHandlers(
     const eventId = getUserEventId(ctx, stateManager);
 
     if (!eventId) {
-      logger.warn('No eventId in typo confirmation');
+      log.warn('No eventId in typo confirmation');
       await ctx.answerCallbackQuery({ text: i18n.t("errorOccurred"), show_alert: true });
       return;
     }
 
-    logger.debug('Typo confirmation:', {
+    log.debug('Typo confirmation:', {
       userId: ctx.from?.id,
       original,
       suggested,
@@ -93,12 +93,12 @@ export function registerRegistrationHandlers(
     const eventId = getUserEventId(ctx, stateManager);
 
     if (!eventId) {
-      logger.warn('No eventId in keep original');
+      log.warn('No eventId in keep original');
       await ctx.answerCallbackQuery({ text: i18n.t("errorOccurred"), show_alert: true });
       return;
     }
 
-    logger.debug('Keep original city:', {
+    log.debug('Keep original city:', {
       userId: ctx.from?.id,
       original,
       eventId
@@ -137,7 +137,7 @@ export function registerRegistrationHandlers(
 
       // Generate and send QR code PDF with full event info
       try {
-        logger.info('Generating QR code PDF for event:', {
+        log.info('Generating QR code PDF for event:', {
           eventId: result.event.id,
           deepLink
         });
@@ -153,9 +153,9 @@ export function registerRegistrationHandlers(
           }
         );
 
-        logger.info('QR code PDF sent successfully:', { eventId: result.event.id });
+        log.info('QR code PDF sent successfully:', { eventId: result.event.id });
       } catch (error) {
-        logger.error('Failed to generate/send QR code PDF:', error);
+        log.error('Failed to generate/send QR code PDF:', error);
         // Fallback: send text message if PDF generation fails
         await ctx.reply(
           i18n.t("eventCreated", {
@@ -173,7 +173,7 @@ export function registerRegistrationHandlers(
     // Handle city registration flow
     const eventId = userState?.data?.eventId;
     if (!eventId || storage.isRegistered(ctx.from.id, eventId)) {
-      logger.debug('Ignoring text - not in registration flow or already registered');
+      log.debug('Ignoring text - not in registration flow or already registered');
       return;
     }
 
@@ -182,7 +182,7 @@ export function registerRegistrationHandlers(
       return;
     }
 
-    logger.debug('Processing city input:', {
+    log.debug('Processing city input:', {
       userId: ctx.from.id,
       eventId,
       input
@@ -197,7 +197,7 @@ export function registerRegistrationHandlers(
         lastName: ctx.from.last_name,
       });
 
-      logger.info('Registration with exact match:', {
+      log.info('Registration with exact match:', {
         userId: ctx.from.id,
         eventId,
         city: exactMatch
@@ -220,7 +220,7 @@ export function registerRegistrationHandlers(
     // Check for typos
     const closest = findClosestCity(input, cities);
     if (closest) {
-      logger.debug('Found possible typo:', {
+      log.debug('Found possible typo:', {
         userId: ctx.from.id,
         input,
         suggested: closest.city,
@@ -243,7 +243,7 @@ export function registerRegistrationHandlers(
       lastName: ctx.from.last_name,
     });
 
-    logger.info('Registration with custom city:', {
+    log.info('Registration with custom city:', {
       userId: ctx.from.id,
       eventId,
       city: input

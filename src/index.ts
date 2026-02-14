@@ -1,14 +1,15 @@
 import { Bot } from "grammy";
-import { getSDK } from "./sdk";
-import { logger } from "./logger";
-import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "./storage";
-import { UserStateManager } from "./shared/state";
-import { registerHelpHandler } from "./handlers/help";
-import { registerErrorHandler } from "./handlers/errors";
-import { registerAdminHandlers } from "./handlers/admin";
-import { registerEventsHandlers } from "./handlers/events";
-import { registerStartHandler } from "./handlers/start";
-import { registerRegistrationHandlers } from "./handlers/registration";
+import { getSDK } from "@/sdk";
+import { log } from "@/utils/sdk-helpers";
+import { i18n } from "@/i18n";
+import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "@/storage";
+import { UserStateManager } from "@/shared/state";
+import { registerHelpHandler } from "@/handlers/help";
+import { registerErrorHandler } from "@/handlers/errors";
+import { registerAdminHandlers } from "@/handlers/admin";
+import { registerEventsHandlers } from "@/handlers/events";
+import { registerStartHandler } from "@/handlers/start";
+import { registerRegistrationHandlers } from "@/handlers/registration";
 
 // Initialize storage and state
 const storage = new RegistrationStorage();
@@ -17,7 +18,12 @@ const attemptStorage = new RegistrationAttemptStorage();
 const stateManager = new UserStateManager();
 
 export default function setup(bot: Bot) {
-  logger.info('Setting up bot handlers...');
+  // Initialize i18n language from SDK
+  getSDK().then(sdk => {
+    i18n.setLanguage(sdk.config.language || 'ru-RU');
+  });
+
+  log.info('Setting up bot handlers...');
 
   // Register all handlers
   registerStartHandler(bot, eventStorage, storage, attemptStorage, stateManager);
@@ -27,24 +33,24 @@ export default function setup(bot: Bot) {
   registerHelpHandler(bot);
   registerErrorHandler(bot);
 
-  logger.info('Bot handlers registered successfully');
+  log.info('Bot handlers registered successfully');
 
   // Cleanup on exit
   const cleanup = async () => {
-    logger.info('Cleaning up...');
+    log.info('Cleaning up...');
     stateManager.cleanup();
     const sdk = await getSDK();
     await sdk.close();
   };
 
   process.on('SIGINT', async () => {
-    logger.info('Received SIGINT');
+    log.info('Received SIGINT');
     await cleanup();
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
-    logger.info('Received SIGTERM');
+    log.info('Received SIGTERM');
     await cleanup();
     process.exit(0);
   });

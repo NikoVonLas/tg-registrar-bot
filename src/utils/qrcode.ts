@@ -1,7 +1,7 @@
 import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
-import { logger } from '../logger';
-import { i18n } from '../i18n';
+import { log } from '@/utils/sdk-helpers';
+import { i18n } from '@/i18n';
 
 /**
  * Generate QR code as PDF with high-resolution PNG
@@ -11,7 +11,7 @@ import { i18n } from '../i18n';
  */
 export async function generateQRCodePDF(data: string, eventName: string): Promise<Buffer> {
   try {
-    logger.debug('Generating QR code PDF:', { data, eventName });
+    log.debug('Generating QR code PDF:', { data, eventName });
 
     // Generate QR code as PNG buffer with high resolution
     const qrBuffer = await QRCode.toBuffer(data, {
@@ -37,7 +37,7 @@ export async function generateQRCodePDF(data: string, eventName: string): Promis
         doc.on('data', (chunk) => chunks.push(chunk));
         doc.on('end', () => {
           const result = Buffer.concat(chunks);
-          logger.debug('QR code PDF generated:', { size: result.length });
+          log.debug('QR code PDF generated:', { size: result.length });
           resolve(result);
         });
         doc.on('error', reject);
@@ -66,7 +66,7 @@ export async function generateQRCodePDF(data: string, eventName: string): Promis
       }
     });
   } catch (error) {
-    logger.error('Failed to generate QR code PDF:', error);
+    log.error('Failed to generate QR code PDF:', error);
     throw error;
   }
 }

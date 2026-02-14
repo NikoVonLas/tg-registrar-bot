@@ -1,10 +1,10 @@
 import { Bot } from "grammy";
-import { i18n } from "../i18n";
-import { logger } from "../logger";
-import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "../storage";
-import { UserStateManager } from "../shared/state";
-import { isAdmin } from "../shared/auth";
-import { createEventListKeyboard } from "../shared/keyboards";
+import { i18n } from "@/i18n";
+import { log } from "@/utils/sdk-helpers";
+import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
+import { UserStateManager } from "@/shared/state";
+import { isAdmin } from "@/shared/auth";
+import { createEventListKeyboard } from "@/shared/keyboards";
 
 export function registerStartHandler(
   bot: Bot,
@@ -15,7 +15,7 @@ export function registerStartHandler(
 ) {
   bot.command("start", async (ctx) => {
     if (!ctx.from) {
-      logger.warn('Start command without ctx.from');
+      log.warn('Start command without ctx.from');
       return;
     }
 
@@ -24,7 +24,7 @@ export function registerStartHandler(
 
     // If no payload and user is admin, show events list
     if (!payload && isAdmin(ctx.from.id)) {
-      logger.info('Admin accessed /start without payload, showing events list:', {
+      log.info('Admin accessed /start without payload, showing events list:', {
         userId: ctx.from.id
       });
       await ctx.reply(i18n.t("eventsList"), {
@@ -35,7 +35,7 @@ export function registerStartHandler(
 
     // If no payload and user is not admin, require event link
     if (!payload) {
-      logger.warn('User accessed /start without event link:', {
+      log.warn('User accessed /start without event link:', {
         userId: ctx.from.id
       });
       await ctx.reply(i18n.t("requireEventLink"));
@@ -44,7 +44,7 @@ export function registerStartHandler(
 
     const eventId = payload;
 
-    logger.info('Start command:', {
+    log.info('Start command:', {
       userId: ctx.from.id,
       eventId,
       hasPayload: !!payload
@@ -53,7 +53,7 @@ export function registerStartHandler(
     // Check if event exists and is active
     const event = eventStorage.getEvent(eventId);
     if (!event || !event.active) {
-      logger.warn('Event not found or inactive:', { eventId });
+      log.warn('Event not found or inactive:', { eventId });
       await ctx.reply(i18n.t("eventNotFound"));
       return;
     }
@@ -61,7 +61,7 @@ export function registerStartHandler(
     // Check if already registered for this event
     if (storage.isRegistered(ctx.from.id, eventId)) {
       const reg = storage.getRegistration(ctx.from.id, eventId);
-      logger.debug('User already registered:', {
+      log.debug('User already registered:', {
         userId: ctx.from.id,
         eventId,
         city: reg?.city

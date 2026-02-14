@@ -1,8 +1,8 @@
 import { InlineKeyboard } from "grammy";
-import { i18n } from "../i18n";
-import { CB } from "./callbacks";
-import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "../storage";
-import { Event } from "../storage";
+import { i18n } from "@/i18n";
+import { CB } from "@/shared/callbacks";
+import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
+import { Event } from "@/storage";
 
 export function createTypoCorrectionKeyboard(input: string, suggested: string) {
   return new InlineKeyboard()

@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { randomBytes } from 'crypto';
-import { config } from '../config';
-import { logger } from '../logger';
+import { DATA_DIR } from '@/constants';
+import { log } from '@/utils/sdk-helpers';
 
 export interface Event {
   id: string;
@@ -12,7 +12,7 @@ export interface Event {
   active: boolean;
 }
 
-const EVENTS_FILE = path.join(config.dataDir, 'events.json');
+const EVENTS_FILE = path.join(DATA_DIR, 'events.json');
 
 export class EventStorage {
   private events: Map<string, Event> = new Map();
@@ -23,9 +23,9 @@ export class EventStorage {
   }
 
   private ensureDataDir() {
-    if (!fs.existsSync(config.dataDir)) {
-      fs.mkdirSync(config.dataDir, { recursive: true });
-      logger.info('Created data directory:', config.dataDir);
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+      log.info('Created data directory:', DATA_DIR);
     }
   }
 
@@ -35,9 +35,9 @@ export class EventStorage {
       try {
         const data = JSON.parse(fs.readFileSync(EVENTS_FILE, 'utf-8'));
         this.events = new Map(data.map((e: Event) => [e.id, e]));
-        logger.info('Loaded events:', this.events.size);
+        log.info('Loaded events:', this.events.size);
       } catch (error) {
-        logger.error('Failed to load events:', error);
+        log.error('Failed to load events:', error);
       }
     }
   }
@@ -47,7 +47,7 @@ export class EventStorage {
       EVENTS_FILE,
       JSON.stringify(Array.from(this.events.values()), null, 2)
     );
-    logger.debug('Saved events:', this.events.size);
+    log.debug('Saved events:', this.events.size);
   }
 
   private generateId(): string {
@@ -64,7 +64,7 @@ export class EventStorage {
     };
     this.events.set(event.id, event);
     this.save();
-    logger.info('Created event:', { id: event.id, name: event.name, createdBy });
+    log.info('Created event:', { id: event.id, name: event.name, createdBy });
     return event;
   }
 
@@ -86,7 +86,7 @@ export class EventStorage {
     const deleted = this.events.delete(id);
     if (deleted) {
       this.save();
-      logger.info('Deleted event:', id);
+      log.info('Deleted event:', id);
     }
     return deleted;
   }
@@ -96,7 +96,7 @@ export class EventStorage {
     if (!event) return false;
     event.active = !event.active;
     this.save();
-    logger.info('Toggled event active status:', { id, active: event.active });
+    log.info('Toggled event active status:', { id, active: event.active });
     return true;
   }
 }

@@ -1,13 +1,13 @@
 import { Bot, InputFile } from "grammy";
-import { i18n } from "../i18n";
-import { logger } from "../logger";
-import { isAdmin } from "../shared/auth";
-import { CB } from "../shared/callbacks";
-import { createEventListKeyboard, createEventDetailsKeyboard } from "../shared/keyboards";
-import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "../storage";
-import { formatCitiesStats } from "../utils/formatters";
-import { generateQRCodePDF } from "../utils/qrcode";
-import { escapeMarkdown } from "../utils/markdown";
+import { i18n } from "@/i18n";
+import { log } from "@/utils/sdk-helpers";
+import { isAdmin } from "@/shared/auth";
+import { CB } from "@/shared/callbacks";
+import { createEventListKeyboard, createEventDetailsKeyboard } from "@/shared/keyboards";
+import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "@/storage";
+import { formatCitiesStats } from "@/utils/formatters";
+import { generateQRCodePDF } from "@/utils/qrcode";
+import { escapeMarkdown } from "@/utils/markdown";
 
 export function registerAdminHandlers(
   bot: Bot,
@@ -18,11 +18,11 @@ export function registerAdminHandlers(
   // /admin command - shows event list
   bot.command("admin", async (ctx) => {
     if (!ctx.from) {
-      logger.warn('Admin command without ctx.from');
+      log.warn('Admin command without ctx.from');
       return;
     }
 
-    logger.info('Admin command:', { userId: ctx.from.id });
+    log.info('Admin command:', { userId: ctx.from.id });
 
     if (!isAdmin(ctx.from.id)) {
       await ctx.reply(i18n.t("noAccess"));
@@ -41,7 +41,7 @@ export function registerAdminHandlers(
       return;
     }
 
-    logger.debug('Event list callback');
+    log.debug('Event list callback');
     await ctx.editMessageText(i18n.t("eventsList"), {
       reply_markup: createEventListKeyboard(eventStorage, storage, 0)
     });
@@ -56,7 +56,7 @@ export function registerAdminHandlers(
     }
 
     const page = parseInt(ctx.match[1]);
-    logger.debug('Event list page callback:', { page });
+    log.debug('Event list page callback:', { page });
 
     await ctx.editMessageText(i18n.t("eventsList"), {
       reply_markup: createEventListKeyboard(eventStorage, storage, page)
@@ -99,7 +99,7 @@ export function registerAdminHandlers(
       `• ${i18n.t("startedNotCompleted")}: ${attemptsCount}\n\n` +
       `🏙 **По городам:**\n${formatted.text}${more}`;
 
-    logger.debug('Event details callback:', {
+    log.debug('Event details callback:', {
       eventId,
       registrations: stats.total,
       attempts: attemptsCount
@@ -134,7 +134,7 @@ export function registerAdminHandlers(
       const deepLink = `https://t.me/${botInfo.username}?start=${eventId}`;
       const displayLink = `https://t.me/${escapeMarkdown(botInfo.username || '')}?start=${eventId}`;
 
-      logger.info('Resending QR code for event:', { eventId });
+      log.info('Resending QR code for event:', { eventId });
 
       const pdfBuffer = await generateQRCodePDF(deepLink, event.name);
 
@@ -146,9 +146,9 @@ export function registerAdminHandlers(
         }
       );
 
-      logger.info('QR code resent successfully:', { eventId });
+      log.info('QR code resent successfully:', { eventId });
     } catch (error) {
-      logger.error('Failed to resend QR code:', error);
+      log.error('Failed to resend QR code:', error);
       await ctx.reply('⚠️ Не удалось сгенерировать QR-код.');
     }
   });
@@ -164,7 +164,7 @@ export function registerAdminHandlers(
     const deleted = eventStorage.deleteEvent(eventId);
 
     if (deleted) {
-      logger.info('Event deleted:', { eventId, userId: ctx.from.id });
+      log.info('Event deleted:', { eventId, userId: ctx.from.id });
       await ctx.editMessageText(i18n.t("eventDeleted"));
       await ctx.answerCallbackQuery();
 

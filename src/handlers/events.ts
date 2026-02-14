@@ -1,9 +1,9 @@
 import { Bot } from "grammy";
-import { logger } from "../logger";
-import { isAdmin } from "../shared/auth";
-import { CB } from "../shared/callbacks";
-import { EventStorage } from "../storage";
-import { UserStateManager } from "../shared/state";
+import { log } from "@/utils/sdk-helpers";
+import { isAdmin } from "@/shared/auth";
+import { CB } from "@/shared/callbacks";
+import { EventStorage } from "@/storage";
+import { UserStateManager } from "@/shared/state";
 
 export function registerEventsHandlers(
   bot: Bot,
@@ -17,7 +17,7 @@ export function registerEventsHandlers(
       return;
     }
 
-    logger.debug('Create event callback:', { userId: ctx.from.id });
+    log.debug('Create event callback:', { userId: ctx.from.id });
     stateManager.set(ctx.from.id, 'creating_event');
     await ctx.editMessageText("Введите название мероприятия:");
     await ctx.answerCallbackQuery();
@@ -38,7 +38,7 @@ export function handleEventCreationText(
   const event = eventStorage.createEvent(text, userId);
   stateManager.delete(userId);
 
-  logger.info('Event created via text:', { eventId: event.id, name: event.name, userId });
+  log.info('Event created via text:', { eventId: event.id, name: event.name, userId });
 
   return { success: true, event };
 }

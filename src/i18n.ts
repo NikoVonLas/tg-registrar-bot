@@ -1,4 +1,4 @@
-import { config } from './config';
+import { getSDK } from '@/sdk';
 
 // i18n translations
 const translations = {
@@ -86,10 +86,10 @@ type Language = 'en-US' | 'ru-RU';
 type TranslationKey = keyof typeof translations['en-US'];
 
 class I18n {
-  private lang: Language;
+  private lang: Language = 'ru-RU'; // Default, will be updated from SDK
 
-  constructor() {
-    const envLang = config.language.toLowerCase();
+  setLanguage(language: string) {
+    const envLang = language.toLowerCase();
     // Accept various formats: ru-RU, ru-ru, ruRU, ru
     const normalized = envLang.replace(/[_-]?ru/i, 'ru-RU').replace(/[_-]?en/i, 'en-US');
     this.lang = (normalized.includes('ru') ? 'ru-RU' : 'en-US') as Language;

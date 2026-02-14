@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { config } from '../config';
-import { logger } from '../logger';
+import { DATA_DIR } from '@/constants';
+import { log } from '@/utils/sdk-helpers';
 
 export interface UserState {
   action: string;
@@ -9,7 +9,7 @@ export interface UserState {
   timestamp: number;
 }
 
-const STATE_FILE = path.join(config.dataDir, 'user-states.json');
+const STATE_FILE = path.join(DATA_DIR, 'user-states.json');
 const AUTO_SAVE_INTERVAL = 5000; // 5 seconds
 const STATE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -29,9 +29,9 @@ export class UserStateManager {
     try {
       const data = JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
       this.states = new Map(Object.entries(data).map(([k, v]) => [Number(k), v as UserState]));
-      logger.info('Loaded user states:', this.states.size);
+      log.info('Loaded user states:', this.states.size);
     } catch (error) {
-      logger.error('Failed to load user states:', error);
+      log.error('Failed to load user states:', error);
       this.states = new Map();
     }
   }
@@ -40,9 +40,9 @@ export class UserStateManager {
     try {
       const data = Object.fromEntries(this.states);
       fs.writeFileSync(STATE_FILE, JSON.stringify(data, null, 2), 'utf-8');
-      logger.debug('Saved user states:', this.states.size);
+      log.debug('Saved user states:', this.states.size);
     } catch (error) {
-      logger.error('Failed to save user states:', error);
+      log.error('Failed to save user states:', error);
     }
   }
 
@@ -66,7 +66,7 @@ export class UserStateManager {
     }
 
     if (cleaned > 0) {
-      logger.info(`Cleaned up ${cleaned} old user states`);
+      log.info(`Cleaned up ${cleaned} old user states`);
       this.save();
     }
   }
@@ -81,13 +81,13 @@ export class UserStateManager {
       data,
       timestamp: Date.now(),
     });
-    logger.debug(`Set user state: userId=${userId}, action=${action}`);
+    log.debug(`Set user state: userId=${userId}, action=${action}`);
   }
 
   delete(userId: number) {
     const deleted = this.states.delete(userId);
     if (deleted) {
-      logger.debug(`Deleted user state: userId=${userId}`);
+      log.debug(`Deleted user state: userId=${userId}`);
     }
   }
 

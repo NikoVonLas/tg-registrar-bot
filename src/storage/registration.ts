@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { config } from '../config';
-import { logger } from '../logger';
+import { DATA_DIR } from '@/constants';
+import { log } from '@/utils/sdk-helpers';
 
 export interface Registration {
   userId: number;
@@ -14,7 +14,7 @@ export interface Registration {
   qrScan?: string;
 }
 
-const STORAGE_PATH = path.join(config.dataDir, 'registrations.json');
+const STORAGE_PATH = path.join(DATA_DIR, 'registrations.json');
 
 export class RegistrationStorage {
   private registrations: Registration[] = [];
@@ -28,7 +28,7 @@ export class RegistrationStorage {
     const dir = path.dirname(STORAGE_PATH);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
-      logger.info('Created data directory:', dir);
+      log.info('Created data directory:', dir);
     }
   }
 
@@ -38,9 +38,9 @@ export class RegistrationStorage {
       try {
         const data = JSON.parse(fs.readFileSync(STORAGE_PATH, 'utf-8'));
         this.registrations = Array.isArray(data) ? data : [];
-        logger.info('Loaded registrations:', this.registrations.length);
+        log.info('Loaded registrations:', this.registrations.length);
       } catch (error) {
-        logger.error('Failed to load registrations:', error);
+        log.error('Failed to load registrations:', error);
         this.registrations = [];
       }
     }
@@ -56,7 +56,7 @@ export class RegistrationStorage {
       }
     }
     if (needsSave) {
-      logger.info('Migrated old registrations to default event');
+      log.info('Migrated old registrations to default event');
       this.save();
     }
   }
@@ -64,7 +64,7 @@ export class RegistrationStorage {
   private save() {
     this.ensureDataDir();
     fs.writeFileSync(STORAGE_PATH, JSON.stringify(this.registrations, null, 2), 'utf-8');
-    logger.debug('Saved registrations:', this.registrations.length);
+    log.debug('Saved registrations:', this.registrations.length);
   }
 
   isRegistered(userId: number, eventId: string): boolean {
@@ -83,7 +83,7 @@ export class RegistrationStorage {
     };
     this.registrations.push(registration);
     this.save();
-    logger.info('New registration:', { userId, eventId, city });
+    log.info('New registration:', { userId, eventId, city });
     return registration;
   }
 

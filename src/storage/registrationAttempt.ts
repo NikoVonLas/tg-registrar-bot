@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { config } from '../config';
-import { logger } from '../logger';
+import { DATA_DIR } from '@/constants';
+import { log } from '@/utils/sdk-helpers';
 
 export interface RegistrationAttempt {
   userId: number;
@@ -12,7 +12,7 @@ export interface RegistrationAttempt {
   lastName?: string;
 }
 
-const ATTEMPTS_FILE = path.join(config.dataDir, 'registration-attempts.json');
+const ATTEMPTS_FILE = path.join(DATA_DIR, 'registration-attempts.json');
 
 export class RegistrationAttemptStorage {
   private attempts: Map<string, RegistrationAttempt> = new Map();
@@ -29,9 +29,9 @@ export class RegistrationAttemptStorage {
       this.attempts = new Map(
         data.map((a: RegistrationAttempt) => [this.getKey(a.userId, a.eventId), a])
       );
-      logger.info('Loaded registration attempts:', this.attempts.size);
+      log.info('Loaded registration attempts:', this.attempts.size);
     } catch (error) {
-      logger.error('Failed to load registration attempts:', error);
+      log.error('Failed to load registration attempts:', error);
       this.attempts = new Map();
     }
   }
@@ -40,9 +40,9 @@ export class RegistrationAttemptStorage {
     try {
       const data = Array.from(this.attempts.values());
       fs.writeFileSync(ATTEMPTS_FILE, JSON.stringify(data, null, 2), 'utf-8');
-      logger.debug('Saved registration attempts:', this.attempts.size);
+      log.debug('Saved registration attempts:', this.attempts.size);
     } catch (error) {
-      logger.error('Failed to save registration attempts:', error);
+      log.error('Failed to save registration attempts:', error);
     }
   }
 
@@ -66,7 +66,7 @@ export class RegistrationAttemptStorage {
     };
     this.attempts.set(key, attempt);
     this.save();
-    logger.debug('Recorded registration attempt:', { userId, eventId });
+    log.debug('Recorded registration attempt:', { userId, eventId });
   }
 
   removeAttempt(userId: number, eventId: string) {
@@ -74,7 +74,7 @@ export class RegistrationAttemptStorage {
     const removed = this.attempts.delete(key);
     if (removed) {
       this.save();
-      logger.debug('Removed registration attempt:', { userId, eventId });
+      log.debug('Removed registration attempt:', { userId, eventId });
     }
   }
 
