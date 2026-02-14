@@ -3,6 +3,8 @@ import { i18n } from "../i18n";
 import { logger } from "../logger";
 import { EventStorage, RegistrationStorage } from "../storage";
 import { UserStateManager } from "../shared/state";
+import { isAdmin } from "../shared/auth";
+import { createAdminMenuKeyboard } from "../shared/keyboards";
 
 export function registerStartHandler(
   bot: Bot,
@@ -18,6 +20,18 @@ export function registerStartHandler(
 
     // Parse event ID from deep link parameter
     const payload = ctx.match;
+
+    // If no payload and user is admin, show admin menu
+    if (!payload && isAdmin(ctx.from.id)) {
+      logger.info('Admin accessed /start without payload, showing admin menu:', {
+        userId: ctx.from.id
+      });
+      await ctx.reply(i18n.t("adminMenu"), {
+        reply_markup: createAdminMenuKeyboard()
+      });
+      return;
+    }
+
     const eventId = payload || eventStorage.getDefaultEventId();
 
     logger.info('Start command:', {
