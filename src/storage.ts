@@ -3,6 +3,7 @@ import * as path from 'path';
 
 export interface Registration {
   userId: number;
+  eventId: string;
   username?: string;
   firstName?: string;
   lastName?: string;
@@ -14,10 +15,11 @@ export interface Registration {
 const STORAGE_PATH = path.join(process.cwd(), 'data', 'registrations.json');
 
 export class RegistrationStorage {
-  private registrations: Map<number, Registration> = new Map();
+  private registrations: Registration[] = [];
 
   constructor() {
     this.load();
+    this.migrateOldData();
   }
 
   private ensureDataDir() {
@@ -32,47 +34,63 @@ export class RegistrationStorage {
     if (fs.existsSync(STORAGE_PATH)) {
       try {
         const data = JSON.parse(fs.readFileSync(STORAGE_PATH, 'utf-8'));
-        this.registrations = new Map(data.map((r: Registration) => [r.userId, r]));
+        this.registrations = Array.isArray(data) ? data : [];
       } catch (error) {
         console.error('Failed to load registrations:', error);
+        this.registrations = [];
       }
     }
   }
 
+  private migrateOldData() {
+    // Migrate old registrations without eventId to default event
+    let needsSave = false;
+    for (const reg of this.registrations) {
+      if (!reg.eventId) {
+        reg.eventId = 'default';
+        needsSave = true;
+      }
+    }
+    if (needsSave) this.save();
+  }
+
   private save() {
     this.ensureDataDir();
-    const data = Array.from(this.registrations.values());
-    fs.writeFileSync(STORAGE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    fs.writeFileSync(STORAGE_PATH, JSON.stringify(this.registrations, null, 2), 'utf-8');
   }
 
-  isRegistered(userId: number): boolean {
-    return this.registrations.has(userId);
+  isRegistered(userId: number, eventId: string): boolean {
+    return this.registrations.some(r => r.userId === userId && r.eventId === eventId);
   }
 
-  register(userId: number, city: string, userInfo: { username?: string; firstName?: string; lastName?: string }): Registration {
+  register(userId: number, eventId: string, city: string, userInfo: { username?: string; firstName?: string; lastName?: string }): Registration {
     const registration: Registration = {
       userId,
+      eventId,
       username: userInfo.username,
       firstName: userInfo.firstName,
       lastName: userInfo.lastName,
       city,
       registeredAt: new Date().toISOString(),
     };
-    this.registrations.set(userId, registration);
+    this.registrations.push(registration);
     this.save();
     return registration;
   }
 
-  getRegistration(userId: number): Registration | undefined {
-    return this.registrations.get(userId);
+  getRegistration(userId: number, eventId: string): Registration | undefined {
+    return this.registrations.find(r => r.userId === userId && r.eventId === eventId);
   }
 
-  getAllRegistrations(): Registration[] {
-    return Array.from(this.registrations.values());
+  getAllRegistrations(eventId?: string): Registration[] {
+    if (eventId) {
+      return this.registrations.filter(r => r.eventId === eventId);
+    }
+    return this.registrations;
   }
 
-  getStats(): { total: number; byCities: Record<string, number> } {
-    const all = this.getAllRegistrations();
+  getStats(eventId?: string): { total: number; byCities: Record<string, number> } {
+    const all = this.getAllRegistrations(eventId);
     const byCities: Record<string, number> = {};
 
     for (const reg of all) {
