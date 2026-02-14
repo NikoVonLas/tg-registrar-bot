@@ -7,9 +7,19 @@ const storage = new RegistrationStorage();
 const TOP_CITIES = cities.slice(0, 15);
 
 function isAdmin(userId: number): boolean {
-  const adminIds = process.env.BOT_ADMIN_IDS?.split(',').map(id => id.trim()) || [];
-  const legacyAdminId = process.env.ADMIN_USER_ID;
-  if (legacyAdminId) adminIds.push(legacyAdminId);
+  const adminIds: string[] = [];
+
+  // Bot Platform passes owner via BOT_OWNER_ID
+  if (process.env.BOT_OWNER_ID) adminIds.push(process.env.BOT_OWNER_ID);
+
+  // Bot Platform may pass multiple admins via BOT_ADMIN_IDS
+  if (process.env.BOT_ADMIN_IDS) {
+    adminIds.push(...process.env.BOT_ADMIN_IDS.split(',').map(id => id.trim()));
+  }
+
+  // Legacy: single admin via ADMIN_USER_ID
+  if (process.env.ADMIN_USER_ID) adminIds.push(process.env.ADMIN_USER_ID);
+
   return adminIds.includes(userId.toString());
 }
 
