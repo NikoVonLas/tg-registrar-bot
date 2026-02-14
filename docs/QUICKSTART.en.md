@@ -175,11 +175,11 @@ curl http://localhost:3000/bots/abc123/logs
 
 ## Additional Resources
 
-- **Full documentation:** [README.en.md](./README.en.md)
+- **Full documentation:** [README.en.md](../README.en.md)
 - **Deployment guide:** [DEPLOYMENT.en.md](./DEPLOYMENT.en.md)
 - **API reference:** [API.en.md](./API.en.md)
 - **Architecture:** [ARCHITECTURE.en.md](./ARCHITECTURE.en.md)
 
 ---
 
-**Questions?** See [FAQ in README](./README.en.md#faq) or create an issue on GitHub.
+**Questions?** See [FAQ in README](../README.en.md#faq) or create an issue on GitHub.

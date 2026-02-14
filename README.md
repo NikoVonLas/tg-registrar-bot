@@ -1,6 +1,6 @@
 # Event Registration Bot (Проходка)
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./docs/CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![grammY](https://img.shields.io/badge/grammY-1.23-blue.svg)](https://grammy.dev)
@@ -206,7 +206,7 @@ https://t.me/your_bot_username?start=event
 ### Масштабируемость
 
 - ✅ До 10,000 регистраций: текущая JSON реализация
-- 🔄 10,000-100,000: миграция на SQLite (см. [ARCHITECTURE.md](./ARCHITECTURE.md))
+- 🔄 10,000-100,000: миграция на SQLite (см. [ARCHITECTURE.md](./docs/ARCHITECTURE.md))
 - 🚀 100,000+: PostgreSQL с горизонтальным масштабированием
 
 ### Производительность
@@ -218,12 +218,12 @@ https://t.me/your_bot_username?start=event
 
 ## 📚 Документация
 
-- **[AGENTS.md](./AGENTS.md)** - Руководство для разработчиков
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Архитектура системы
-- **[API.md](./API.md)** - Документация команд и callbacks
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Инструкции по развёртыванию
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Как внести вклад
-- **[CHANGELOG.md](./CHANGELOG.md)** - История изменений
+- **[AGENTS.md](./docs/AGENTS.md)** - Руководство для разработчиков
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Архитектура системы
+- **[API.md](./docs/API.md)** - Документация команд и callbacks
+- **[DEPLOYMENT.md](./docs/DEPLOYMENT.md)** - Инструкции по развёртыванию
+- **[CONTRIBUTING.md](./docs/CONTRIBUTING.md)** - Как внести вклад
+- **[CHANGELOG.md](./docs/CHANGELOG.md)** - История изменений
 
 ## ❓ FAQ
 
@@ -239,13 +239,13 @@ https://t.me/your_bot_username?start=event
 
 ### Можно ли использовать для нескольких мероприятий?
 
-В текущей версии - один бот на одно мероприятие. Мульти-ивент поддержка планируется в версии 1.2.0 (см. [CHANGELOG.md](./CHANGELOG.md)).
+В текущей версии - один бот на одно мероприятие. Мульти-ивент поддержка планируется в версии 1.2.0 (см. [CHANGELOG.md](./docs/CHANGELOG.md)).
 
 ### Как сделать резервную копию данных?
 
 1. Через бота: отправьте `/export` - получите CSV
 2. Через Docker: `docker cp bot-name:/app/data/registrations.json ./backup/`
-3. Автоматически: настройте cron (см. [DEPLOYMENT.md](./DEPLOYMENT.md#backup--recovery))
+3. Автоматически: настройте cron (см. [DEPLOYMENT.md](./docs/DEPLOYMENT.md#backup--recovery))
 
 ### Можно ли добавить свои города?
 
@@ -260,9 +260,9 @@ npm run build
 
 ## 🤝 Поддержка и Вклад
 
-- 🐛 **Нашли баг?** [Создайте issue](./CONTRIBUTING.md#bug-reports)
-- 💡 **Есть идея?** [Предложите фичу](./CONTRIBUTING.md#feature-requests)
-- 🔧 **Хотите помочь?** [Руководство по контрибуции](./CONTRIBUTING.md)
+- 🐛 **Нашли баг?** [Создайте issue](./docs/CONTRIBUTING.md#bug-reports)
+- 💡 **Есть идея?** [Предложите фичу](./docs/CONTRIBUTING.md#feature-requests)
+- 🔧 **Хотите помочь?** [Руководство по контрибуции](./docs/CONTRIBUTING.md)
 
 ## 📄 Лицензия
 

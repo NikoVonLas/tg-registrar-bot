@@ -1,6 +1,6 @@
 # Event Registration Bot
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./CHANGELOG.en.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./docs/CHANGELOG.en.md)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![grammY](https://img.shields.io/badge/grammY-1.23-blue.svg)](https://grammy.dev)
@@ -208,7 +208,7 @@ All data can be exported via `/export` command in CSV format for further analysi
 ### Scalability
 
 - ✅ Up to 10,000 registrations: current JSON implementation
-- 🔄 10,000-100,000: migrate to SQLite (see [ARCHITECTURE.en.md](./ARCHITECTURE.en.md))
+- 🔄 10,000-100,000: migrate to SQLite (see [ARCHITECTURE.en.md](./docs/ARCHITECTURE.en.md))
 - 🚀 100,000+: PostgreSQL with horizontal scaling
 
 ### Performance
@@ -220,13 +220,13 @@ All data can be exported via `/export` command in CSV format for further analysi
 
 ## 📚 Documentation
 
-- **[AGENTS.en.md](./AGENTS.en.md)** - Developer guidelines
-- **[ARCHITECTURE.en.md](./ARCHITECTURE.en.md)** - System architecture
-- **[API.en.md](./API.en.md)** - Commands and callbacks reference
-- **[DEPLOYMENT.en.md](./DEPLOYMENT.en.md)** - Deployment instructions
-- **[CONTRIBUTING.en.md](./CONTRIBUTING.en.md)** - How to contribute
-- **[CHANGELOG.en.md](./CHANGELOG.en.md)** - Version history
-- **[QUICKSTART.en.md](./QUICKSTART.en.md)** - 5-minute setup guide
+- **[AGENTS.en.md](./docs/AGENTS.en.md)** - Developer guidelines
+- **[ARCHITECTURE.en.md](./docs/ARCHITECTURE.en.md)** - System architecture
+- **[API.en.md](./docs/API.en.md)** - Commands and callbacks reference
+- **[DEPLOYMENT.en.md](./docs/DEPLOYMENT.en.md)** - Deployment instructions
+- **[CONTRIBUTING.en.md](./docs/CONTRIBUTING.en.md)** - How to contribute
+- **[CHANGELOG.en.md](./docs/CHANGELOG.en.md)** - Version history
+- **[QUICKSTART.en.md](./docs/QUICKSTART.en.md)** - 5-minute setup guide
 
 ## ❓ FAQ
 
@@ -242,13 +242,13 @@ Yes, but the bot doesn't handle payments. Use it only for registration, and hand
 
 ### Can I use it for multiple events?
 
-Current version: one bot per event. Multi-event support is planned for version 1.2.0 (see [CHANGELOG.en.md](./CHANGELOG.en.md)).
+Current version: one bot per event. Multi-event support is planned for version 1.2.0 (see [CHANGELOG.en.md](./docs/CHANGELOG.en.md)).
 
 ### How to backup data?
 
 1. Via bot: send `/export` - receive CSV
 2. Via Docker: `docker cp bot-name:/app/data/registrations.json ./backup/`
-3. Automated: set up cron (see [DEPLOYMENT.en.md](./DEPLOYMENT.en.md#backup--recovery))
+3. Automated: set up cron (see [DEPLOYMENT.en.md](./docs/DEPLOYMENT.en.md#backup--recovery))
 
 ### Can I add custom cities?
 
@@ -263,9 +263,9 @@ No, requires connection to Telegram Bot API. However, you can deploy a [local Bo
 
 ## 🤝 Support & Contributing
 
-- 🐛 **Found a bug?** [Create an issue](./CONTRIBUTING.en.md#bug-reports)
-- 💡 **Have an idea?** [Suggest a feature](./CONTRIBUTING.en.md#feature-requests)
-- 🔧 **Want to help?** [Contributing guide](./CONTRIBUTING.en.md)
+- 🐛 **Found a bug?** [Create an issue](./docs/CONTRIBUTING.en.md#bug-reports)
+- 💡 **Have an idea?** [Suggest a feature](./docs/CONTRIBUTING.en.md#feature-requests)
+- 🔧 **Want to help?** [Contributing guide](./docs/CONTRIBUTING.en.md)
 
 ## 📄 License
 

@@ -173,11 +173,11 @@ curl http://localhost:3000/bots/abc123/logs
 
 ## Дополнительно
 
-- **Полная документация:** [README.md](./README.md)
+- **Полная документация:** [README.md](../README.md)
 - **Развёртывание:** [DEPLOYMENT.md](./DEPLOYMENT.md)
 - **API команд:** [API.md](./API.md)
 - **Архитектура:** [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ---
 
-**Вопросы?** Смотрите [FAQ в README](./README.md#faq) или создайте issue в GitHub.
+**Вопросы?** Смотрите [FAQ в README](../README.md#faq) или создайте issue в GitHub.
