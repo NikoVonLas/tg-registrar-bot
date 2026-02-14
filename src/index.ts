@@ -46,12 +46,6 @@ function createTopCitiesKeyboard() {
   return keyboard;
 }
 
-function createLocationKeyboard() {
-  const keyboard = new InlineKeyboard()
-    .text("Выбрать город вручную", CB.MANUAL);
-
-  return keyboard;
-}
 
 function createSearchResultsKeyboard(query: string) {
   const keyboard = new InlineKeyboard();
@@ -96,12 +90,6 @@ async function handleCitySelection(ctx: Context, city: string) {
   );
 }
 
-async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
-  // Простое определение ближайшего города по координатам
-  // Для продакшена лучше использовать API (Nominatim, Dadata и т.д.)
-  // Пока возвращаем null чтобы пользователь выбрал вручную
-  return null;
-}
 
 export default function setup(bot: Bot) {
   // Команда /start - точка входа через QR-код
@@ -128,51 +116,11 @@ export default function setup(bot: Bot) {
       `Или выбрать город из списка`,
       {
         parse_mode: "Markdown",
-        reply_markup: createLocationKeyboard(),
+        reply_markup: createTopCitiesKeyboard(),
       }
     );
   });
 
-  // Геолокация
-  bot.on("message:location", async (ctx) => {
-    if (!ctx.from) return;
-
-    if (storage.isRegistered(ctx.from.id)) {
-      await ctx.reply("Вы уже зарегистрированы!");
-      return;
-    }
-
-    const { latitude, longitude } = ctx.message.location;
-    const city = await reverseGeocode(latitude, longitude);
-
-    if (city && cities.includes(city)) {
-      // Город определён - просим подтвердить
-      const keyboard = new InlineKeyboard()
-        .text("Да, верно", CB.CITY(city))
-        .text("❌ Нет, выбрать другой", CB.MANUAL);
-
-      await ctx.reply(
-        `Ваш город: *${city}*?\n\nВсё верно?`,
-        { parse_mode: "Markdown", reply_markup: keyboard }
-      );
-    } else {
-      // Не смогли определить - предлагаем выбрать вручную
-      await ctx.reply(
-        `Не удалось точно определить город. Пожалуйста, выберите из списка:`,
-        { reply_markup: createTopCitiesKeyboard() }
-      );
-    }
-  });
-
-  // Callback: Выбор вручную
-  bot.callbackQuery(CB.MANUAL, async (ctx) => {
-    await ctx.editMessageText(
-      `Выберите ваш город из списка самых популярных:\n\n` +
-      `Или используйте поиск, если вашего города нет в списке.`,
-      { reply_markup: createTopCitiesKeyboard() }
-    );
-    await ctx.answerCallbackQuery();
-  });
 
   // Callback: Выбор конкретного города
   bot.callbackQuery(/^city:(.+)$/, async (ctx) => {
