@@ -27,58 +27,21 @@
     "typescript": "^5.3.3"
   },
   "bot": {
-    "name": "Event Registration Bot",
-    "description": "Telegram bot for event registration with QR codes, multi-event support, and admin management",
     "type": "telegram",
-    "version": "1.0.0",
-    "author": "NikoVonLas",
-    "configKeys": [
-      {
-        "key": "LANGUAGE",
-        "label": "Bot Language",
-        "type": "select",
-        "options": [
-          { "label": "English", "value": "en-US" },
-          { "label": "Русский", "value": "ru-RU" }
-        ],
+    "env": {
+      "LANGUAGE": {
+        "required": false,
+        "description": "Bot interface language (en-US or ru-RU)",
         "default": "ru-RU",
-        "description": "Interface language for bot messages"
+        "configKey": "language"
       },
-      {
-        "key": "DEBUG",
-        "label": "Debug Mode",
-        "type": "boolean",
-        "default": false,
-        "description": "Enable debug logging"
+      "DEBUG": {
+        "required": false,
+        "description": "Enable debug logging (true/false)",
+        "default": "false",
+        "configKey": "debug"
       }
-    ],
-    "features": [
-      "Event management with QR codes",
-      "Multi-event support",
-      "City-based registration",
-      "Typo detection for city names",
-      "Admin panel with statistics",
-      "Registration tracking (started vs completed)",
-      "PDF QR code generation"
-    ],
-    "commands": [
-      {
-        "command": "/start",
-        "description": "Start registration or show admin menu"
-      },
-      {
-        "command": "/admin",
-        "description": "Open admin panel (admin only)"
-      },
-      {
-        "command": "/help",
-        "description": "Show help message"
-      }
-    ],
-    "permissions": {
-      "admin": {
-        "description": "Full access to event management and statistics"
-      }
-    }
+    },
+    "os-packages": []
   }
 }

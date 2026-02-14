@@ -1,5 +1,5 @@
 import { Bot } from "grammy";
-import { config } from "./config";
+import { getSDK } from "./sdk";
 import { logger } from "./logger";
 import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "./storage";
 import { UserStateManager } from "./shared/state";
@@ -33,7 +33,8 @@ export default function setup(bot: Bot) {
   const cleanup = async () => {
     logger.info('Cleaning up...');
     stateManager.cleanup();
-    await logger.close();
+    const sdk = await getSDK();
+    await sdk.close();
   };
 
   process.on('SIGINT', async () => {

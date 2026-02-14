@@ -1,8 +1,4 @@
-import { BotLogger } from '@nikovonlas/bot-sdk';
-import { sdkConfig, config } from './config';
-
-// Create SDK logger instance
-const sdkLogger = new BotLogger(sdkConfig, 'bot', config.debug);
+import { getSDK } from './sdk';
 
 // Helper to ensure metadata is an object
 function normalizeMetadata(metadata?: any): Record<string, any> | undefined {
@@ -11,16 +7,30 @@ function normalizeMetadata(metadata?: any): Record<string, any> | undefined {
   return { value: metadata };
 }
 
-// Export logger with convenient methods
-export const logger = {
-  info: (message: string, metadata?: any) => sdkLogger.info(message, normalizeMetadata(metadata)),
-  warn: (message: string, metadata?: any) => sdkLogger.warn(message, normalizeMetadata(metadata)),
-  error: (message: string, metadata?: any) => sdkLogger.error(message, normalizeMetadata(metadata)),
-  debug: (message: string, metadata?: any) => sdkLogger.debug(message, normalizeMetadata(metadata)),
+// Get SDK logger
+async function getLogger() {
+  const sdk = await getSDK();
+  return sdk.logger;
+}
 
-  // Create child logger with scope
-  child: (scope: string) => sdkLogger.child(scope),
+// Export logger with convenient methods (async-safe)
+export const logger = {
+  info: (message: string, metadata?: any) => {
+    getLogger().then(log => log.info(message, normalizeMetadata(metadata)));
+  },
+  warn: (message: string, metadata?: any) => {
+    getLogger().then(log => log.warn(message, normalizeMetadata(metadata)));
+  },
+  error: (message: string, metadata?: any) => {
+    getLogger().then(log => log.error(message, normalizeMetadata(metadata)));
+  },
+  debug: (message: string, metadata?: any) => {
+    getLogger().then(log => log.debug(message, normalizeMetadata(metadata)));
+  },
 
   // Cleanup
-  close: () => sdkLogger.close(),
+  close: async () => {
+    const log = await getLogger();
+    await log.close();
+  },
 };

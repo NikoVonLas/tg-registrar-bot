@@ -1,36 +1,43 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { BotConfig, loadConfig as loadSDKConfig } from '@nikovonlas/bot-sdk';
+import { getSDK } from './sdk';
 
-// Load config from SDK
-const sdkConfig = loadSDKConfig();
+// Get SDK config (async)
+export async function getConfig() {
+  const sdk = await getSDK();
+  return {
+    // SDK provided
+    token: sdk.config.token,
+    ownerId: sdk.config.ownerId,
+    adminIds: sdk.config.adminIds,
+    botId: sdk.config.botId,
+    port: sdk.config.port,
+    webhookUrl: sdk.config.webhookUrl,
+    managerUrl: sdk.config.managerUrl,
 
-// Validate required environment variables
-if (!sdkConfig.token) {
-  throw new Error("BOT_TOKEN environment variable is required");
+    // Custom config from configKeys
+    language: (sdk.config.language || 'ru-RU') as 'en-US' | 'ru-RU',
+    debug: sdk.config.debug === 'true' || sdk.config.debug === true,
+    dataDir: path.join(process.cwd(), 'data'),
+  };
 }
 
-// Configuration object with SDK config + custom fields
+// Synchronous config for immediate use (with defaults)
 export const config = {
-  // SDK provided
-  token: sdkConfig.token,
-  ownerId: sdkConfig.ownerId,
-  adminIds: sdkConfig.adminIds,
-  botId: sdkConfig.botId,
-  port: sdkConfig.port,
-  webhookUrl: sdkConfig.webhookUrl,
-  managerUrl: sdkConfig.managerUrl,
-
-  // Custom config from env
-  language: (sdkConfig.env.LANGUAGE || 'ru-RU') as 'en-US' | 'ru-RU',
-  debug: sdkConfig.env.DEBUG === 'true',
   dataDir: path.join(process.cwd(), 'data'),
-} as const;
+  language: 'ru-RU' as 'en-US' | 'ru-RU',
+  debug: false,
+};
 
 // Ensure data directory exists
 if (!fs.existsSync(config.dataDir)) {
   fs.mkdirSync(config.dataDir, { recursive: true });
 }
 
-// Export SDK config for other modules
-export { sdkConfig };
+// Initialize config when SDK is ready
+getSDK().then(sdk => {
+  config.language = (sdk.config.language || 'ru-RU') as 'en-US' | 'ru-RU';
+  config.debug = sdk.config.debug === 'true' || sdk.config.debug === true;
+}).catch(err => {
+  console.error('Failed to load config from SDK:', err);
+});
