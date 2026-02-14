@@ -115,17 +115,7 @@ export function registerRegistrationHandlers(
       const botInfo = await ctx.api.getMe();
       const deepLink = `https://t.me/${botInfo.username}?start=${result.event.id}`;
 
-      // Send event creation confirmation
-      await ctx.reply(
-        i18n.t("eventCreated", {
-          name: result.event.name,
-          id: result.event.id,
-          botUsername: botInfo.username || ''
-        }),
-        { parse_mode: "Markdown" }
-      );
-
-      // Generate and send QR code PDF
+      // Generate and send QR code PDF with full event info
       try {
         logger.info('Generating QR code PDF for event:', {
           eventId: result.event.id,
@@ -134,17 +124,27 @@ export function registerRegistrationHandlers(
 
         const pdfBuffer = await generateQRCodePDF(deepLink, result.event.name);
 
+        // Send single message with PDF and all info
         await ctx.replyWithDocument(
           new InputFile(pdfBuffer, `event_${result.event.id}_qr.pdf`),
           {
-            caption: `QR Code for event: ${result.event.name}\n\nDeep link: ${deepLink}`
+            caption: `✅ Мероприятие создано!\n\n📋 Название: ${result.event.name}\n\n🔗 Deep link:\n${deepLink}`,
+            parse_mode: "Markdown"
           }
         );
 
         logger.info('QR code PDF sent successfully:', { eventId: result.event.id });
       } catch (error) {
         logger.error('Failed to generate/send QR code PDF:', error);
-        await ctx.reply('⚠️ Failed to generate QR code. Event was created successfully.');
+        // Fallback: send text message if PDF generation fails
+        await ctx.reply(
+          i18n.t("eventCreated", {
+            name: result.event.name,
+            id: result.event.id,
+            botUsername: botInfo.username || ''
+          }),
+          { parse_mode: "Markdown" }
+        );
       }
 
       return;
