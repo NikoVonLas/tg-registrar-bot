@@ -55,6 +55,7 @@ curl -X POST http://localhost:3000/bots/{id}/start \
 - `/help` - Help
 
 **Admin:**
+- `/admin` - Admin panel with buttons
 - `/stats` - Statistics by city
 - `/export` - Export CSV
 

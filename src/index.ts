@@ -17,6 +17,10 @@ const CB = {
   CITY: (city: string) => `city:${city}`,
   SEARCH: 'search_city',
   BACK_TO_CITIES: 'back_to_cities',
+  ADMIN_TOTAL: 'admin_total',
+  ADMIN_CITIES: 'admin_cities',
+  ADMIN_EXPORT: 'admin_export',
+  ADMIN_MENU: 'admin_menu',
 };
 
 function createTopCitiesKeyboard() {
@@ -29,6 +33,16 @@ function createTopCitiesKeyboard() {
     keyboard.row();
   }
   keyboard.text(i18n.t("findAnotherCity"), CB.SEARCH);
+  return keyboard;
+}
+
+function createAdminMenuKeyboard() {
+  const keyboard = new InlineKeyboard()
+    .text(i18n.t("totalRegistered"), CB.ADMIN_TOTAL)
+    .row()
+    .text(i18n.t("citiesStats"), CB.ADMIN_CITIES)
+    .row()
+    .text(i18n.t("exportData"), CB.ADMIN_EXPORT);
   return keyboard;
 }
 
@@ -121,6 +135,53 @@ export default function setup(bot: Bot) {
       return;
     }
     await ctx.reply(i18n.t("searchResults", { query }), { reply_markup: keyboard });
+  });
+
+  bot.command("admin", async (ctx) => {
+    if (!ctx.from || !isAdmin(ctx.from.id)) {
+      await ctx.reply(i18n.t("noAccess"));
+      return;
+    }
+    await ctx.reply(i18n.t("adminMenu"), { reply_markup: createAdminMenuKeyboard() });
+  });
+
+  bot.callbackQuery(CB.ADMIN_MENU, async (ctx) => {
+    await ctx.editMessageText(i18n.t("adminMenu"), { reply_markup: createAdminMenuKeyboard() });
+    await ctx.answerCallbackQuery();
+  });
+
+  bot.callbackQuery(CB.ADMIN_TOTAL, async (ctx) => {
+    const stats = storage.getStats();
+    await ctx.answerCallbackQuery({ text: i18n.t("totalCount", { count: stats.total }), show_alert: true });
+  });
+
+  bot.callbackQuery(CB.ADMIN_CITIES, async (ctx) => {
+    const stats = storage.getStats();
+    const citiesList = Object.entries(stats.byCities).slice(0, 20)
+      .map(([city, count]) => `• ${city}: ${count}`)
+      .join('\n');
+    const more = Object.keys(stats.byCities).length > 20
+      ? `\n\n${i18n.t("andMore", { count: Object.keys(stats.byCities).length - 20 })}`
+      : '';
+    const keyboard = new InlineKeyboard().text("← " + i18n.t("adminMenu"), CB.ADMIN_MENU);
+    await ctx.editMessageText(
+      i18n.t("stats", { total: stats.total, cities: citiesList + more }),
+      { parse_mode: "Markdown", reply_markup: keyboard }
+    );
+    await ctx.answerCallbackQuery();
+  });
+
+  bot.callbackQuery(CB.ADMIN_EXPORT, async (ctx) => {
+    const registrations = storage.getAllRegistrations();
+    let csv = "UserID,Username,FirstName,LastName,City,RegisteredAt\n";
+    for (const reg of registrations) {
+      csv += `${reg.userId},"${reg.username || ''}","${reg.firstName || ''}","${reg.lastName || ''}","${reg.city}","${reg.registeredAt}"\n`;
+    }
+    await ctx.replyWithDocument(
+      new InputFile(Buffer.from(csv, 'utf-8'), `registrations_${Date.now()}.csv`),
+      { caption: i18n.t("export", { count: registrations.length }) }
+    );
+    await ctx.answerCallbackQuery();
   });
 
   bot.command("stats", async (ctx) => {
