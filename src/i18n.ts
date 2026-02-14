@@ -1,6 +1,6 @@
 // i18n translations
 const translations = {
-  en: {
+  'en-US': {
     welcome: "Welcome to the event!\n\nPlease select your city to register:",
     alreadyRegistered: "You're already registered!\n\nYour city: *{city}*\nRegistration time: {time}",
     registrationComplete: "Great! You're registered.\n\nYour city: *{city}*\nRegistration time: {time}\n\nWelcome to the event!",
@@ -19,7 +19,7 @@ const translations = {
     invalidCity: "Invalid city",
     andMore: "...and {count} more cities",
   },
-  ru: {
+  'ru-RU': {
     welcome: "Добро пожаловать на мероприятие!\n\nДля регистрации выберите ваш город:",
     alreadyRegistered: "Вы уже зарегистрированы!\n\nВаш город: *{city}*\nВремя регистрации: {time}",
     registrationComplete: "Отлично! Вы зарегистрированы.\n\nВаш город: *{city}*\nВремя регистрации: {time}\n\nДобро пожаловать на мероприятие!",
@@ -40,15 +40,17 @@ const translations = {
   },
 };
 
-type Language = 'en' | 'ru';
-type TranslationKey = keyof typeof translations.en;
+type Language = 'en-US' | 'ru-RU';
+type TranslationKey = keyof typeof translations['en-US'];
 
 class I18n {
   private lang: Language;
 
   constructor() {
-    const envLang = (process.env.LANGUAGE || 'en').toLowerCase();
-    this.lang = (envLang === 'ru' ? 'ru' : 'en') as Language;
+    const envLang = (process.env.LANGUAGE || 'en-US').toLowerCase();
+    // Accept various formats: ru-RU, ru-ru, ruRU, ru
+    const normalized = envLang.replace(/[_-]?ru/i, 'ru-RU').replace(/[_-]?en/i, 'en-US');
+    this.lang = (normalized.includes('ru') ? 'ru-RU' : 'en-US') as Language;
   }
 
   t(key: TranslationKey, params?: Record<string, string | number>): string {
