@@ -4,7 +4,7 @@ import { logger } from "../logger";
 import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "../storage";
 import { UserStateManager } from "../shared/state";
 import { isAdmin } from "../shared/auth";
-import { createAdminMenuKeyboard } from "../shared/keyboards";
+import { createEventListKeyboard } from "../shared/keyboards";
 
 export function registerStartHandler(
   bot: Bot,
@@ -22,13 +22,13 @@ export function registerStartHandler(
     // Parse event ID from deep link parameter
     const payload = ctx.match;
 
-    // If no payload and user is admin, show admin menu (events list)
+    // If no payload and user is admin, show events list
     if (!payload && isAdmin(ctx.from.id)) {
       logger.info('Admin accessed /start without payload, showing events list:', {
         userId: ctx.from.id
       });
-      await ctx.reply(i18n.t("adminMenu"), {
-        reply_markup: createAdminMenuKeyboard()
+      await ctx.reply(i18n.t("eventsList"), {
+        reply_markup: createEventListKeyboard(eventStorage, storage, 0)
       });
       return;
     }

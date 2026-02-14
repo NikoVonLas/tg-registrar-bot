@@ -37,6 +37,9 @@ const translations = {
     errorOccurred: "An error occurred. Please try again later.",
     registration: "Registration",
     requireEventLink: "Please use an event registration link to register.",
+    resendQR: "Resend QR Code",
+    eventDetails: "Event Details",
+    startedNotCompleted: "Started but not completed",
   },
   'ru-RU': {
     enterCityName: "Добро пожаловать на мероприятие!\n\nНапишите название вашего города:",
@@ -73,6 +76,9 @@ const translations = {
     errorOccurred: "Произошла ошибка. Пожалуйста, попробуйте позже.",
     registration: "Регистрация",
     requireEventLink: "Пожалуйста, используйте ссылку для регистрации на мероприятие.",
+    resendQR: "Отправить QR-код повторно",
+    eventDetails: "Информация о мероприятии",
+    startedNotCompleted: "Начали, но не завершили",
   },
 };
 

@@ -22,8 +22,8 @@ export default function setup(bot: Bot) {
   // Register all handlers
   registerStartHandler(bot, eventStorage, storage, attemptStorage, stateManager);
   registerRegistrationHandlers(bot, storage, eventStorage, attemptStorage, stateManager);
-  registerAdminHandlers(bot, storage);
-  registerEventsHandlers(bot, storage, eventStorage, stateManager);
+  registerAdminHandlers(bot, storage, eventStorage, attemptStorage);
+  registerEventsHandlers(bot, eventStorage, stateManager);
   registerHelpHandler(bot);
   registerErrorHandler(bot);
 
