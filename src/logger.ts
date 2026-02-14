@@ -1,26 +1,26 @@
-import { config } from './config';
+import { BotLogger } from '@nikovonlas/bot-sdk';
+import { sdkConfig, config } from './config';
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+// Create SDK logger instance
+const sdkLogger = new BotLogger(sdkConfig, 'bot', config.debug);
 
-const colors = {
-  info: '\x1b[36m',    // Cyan
-  warn: '\x1b[33m',    // Yellow
-  error: '\x1b[31m',   // Red
-  debug: '\x1b[90m',   // Gray
-  reset: '\x1b[0m',
-};
-
-function log(level: LogLevel, ...args: any[]) {
-  const timestamp = new Date().toISOString();
-  const color = colors[level];
-  const levelStr = level.toUpperCase().padEnd(5);
-
-  console.log(`${color}[${timestamp}] ${levelStr}${colors.reset}`, ...args);
+// Helper to ensure metadata is an object
+function normalizeMetadata(metadata?: any): Record<string, any> | undefined {
+  if (metadata === undefined || metadata === null) return undefined;
+  if (typeof metadata === 'object' && !Array.isArray(metadata)) return metadata;
+  return { value: metadata };
 }
 
+// Export logger with convenient methods
 export const logger = {
-  info: (...args: any[]) => log('info', ...args),
-  warn: (...args: any[]) => log('warn', ...args),
-  error: (...args: any[]) => log('error', ...args),
-  debug: (...args: any[]) => config.debug && log('debug', ...args),
+  info: (message: string, metadata?: any) => sdkLogger.info(message, normalizeMetadata(metadata)),
+  warn: (message: string, metadata?: any) => sdkLogger.warn(message, normalizeMetadata(metadata)),
+  error: (message: string, metadata?: any) => sdkLogger.error(message, normalizeMetadata(metadata)),
+  debug: (message: string, metadata?: any) => sdkLogger.debug(message, normalizeMetadata(metadata)),
+
+  // Create child logger with scope
+  child: (scope: string) => sdkLogger.child(scope),
+
+  // Cleanup
+  close: () => sdkLogger.close(),
 };

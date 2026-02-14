@@ -30,15 +30,21 @@ export default function setup(bot: Bot) {
   logger.info('Bot handlers registered successfully');
 
   // Cleanup on exit
-  process.on('SIGINT', () => {
-    logger.info('Received SIGINT, cleaning up...');
+  const cleanup = async () => {
+    logger.info('Cleaning up...');
     stateManager.cleanup();
+    await logger.close();
+  };
+
+  process.on('SIGINT', async () => {
+    logger.info('Received SIGINT');
+    await cleanup();
     process.exit(0);
   });
 
-  process.on('SIGTERM', () => {
-    logger.info('Received SIGTERM, cleaning up...');
-    stateManager.cleanup();
+  process.on('SIGTERM', async () => {
+    logger.info('Received SIGTERM');
+    await cleanup();
     process.exit(0);
   });
 }

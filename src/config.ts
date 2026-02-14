@@ -1,28 +1,29 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { BotConfig, loadConfig as loadSDKConfig } from '@nikovonlas/bot-sdk';
+
+// Load config from SDK
+const sdkConfig = loadSDKConfig();
 
 // Validate required environment variables
-export const BOT_TOKEN = process.env.BOT_TOKEN;
-if (!BOT_TOKEN) {
+if (!sdkConfig.token) {
   throw new Error("BOT_TOKEN environment variable is required");
 }
 
-// Parse admin IDs
-const adminIds: string[] = [];
-if (process.env.BOT_OWNER_ID) {
-  adminIds.push(process.env.BOT_OWNER_ID);
-}
-if (process.env.BOT_ADMIN_IDS) {
-  adminIds.push(...process.env.BOT_ADMIN_IDS.split(',').map(id => id.trim()));
-}
-
-// Configuration object
+// Configuration object with SDK config + custom fields
 export const config = {
-  token: BOT_TOKEN,
-  ownerId: process.env.BOT_OWNER_ID,
-  adminIds,
-  language: (process.env.LANGUAGE || 'en-US') as 'en-US' | 'ru-RU',
-  debug: process.env.DEBUG === 'true',
+  // SDK provided
+  token: sdkConfig.token,
+  ownerId: sdkConfig.ownerId,
+  adminIds: sdkConfig.adminIds,
+  botId: sdkConfig.botId,
+  port: sdkConfig.port,
+  webhookUrl: sdkConfig.webhookUrl,
+  managerUrl: sdkConfig.managerUrl,
+
+  // Custom config from env
+  language: (sdkConfig.env.LANGUAGE || 'ru-RU') as 'en-US' | 'ru-RU',
+  debug: sdkConfig.env.DEBUG === 'true',
   dataDir: path.join(process.cwd(), 'data'),
 } as const;
 
@@ -30,3 +31,6 @@ export const config = {
 if (!fs.existsSync(config.dataDir)) {
   fs.mkdirSync(config.dataDir, { recursive: true });
 }
+
+// Export SDK config for other modules
+export { sdkConfig };
