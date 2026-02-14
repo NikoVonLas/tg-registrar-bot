@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { randomBytes } from 'crypto';
+import { config } from '../config';
+import { logger } from '../logger';
 
 export interface Event {
   id: string;
@@ -10,8 +12,7 @@ export interface Event {
   active: boolean;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const EVENTS_FILE = path.join(DATA_DIR, 'events.json');
+const EVENTS_FILE = path.join(config.dataDir, 'events.json');
 const DEFAULT_EVENT_ID = 'default';
 
 export class EventStorage {
@@ -24,21 +25,28 @@ export class EventStorage {
   }
 
   private ensureDataDir() {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(config.dataDir)) {
+      fs.mkdirSync(config.dataDir, { recursive: true });
+      logger.info('Created data directory:', config.dataDir);
     }
   }
 
   private ensureDefaultEvent() {
     if (!this.events.has(DEFAULT_EVENT_ID)) {
       this.createEvent('Default Event', 0, DEFAULT_EVENT_ID);
+      logger.info('Created default event');
     }
   }
 
   private load() {
     if (fs.existsSync(EVENTS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(EVENTS_FILE, 'utf-8'));
-      this.events = new Map(data.map((e: Event) => [e.id, e]));
+      try {
+        const data = JSON.parse(fs.readFileSync(EVENTS_FILE, 'utf-8'));
+        this.events = new Map(data.map((e: Event) => [e.id, e]));
+        logger.info('Loaded events:', this.events.size);
+      } catch (error) {
+        logger.error('Failed to load events:', error);
+      }
     }
   }
 
@@ -47,6 +55,7 @@ export class EventStorage {
       EVENTS_FILE,
       JSON.stringify(Array.from(this.events.values()), null, 2)
     );
+    logger.debug('Saved events:', this.events.size);
   }
 
   private generateId(): string {
@@ -63,6 +72,7 @@ export class EventStorage {
     };
     this.events.set(event.id, event);
     this.save();
+    logger.info('Created event:', { id: event.id, name: event.name, createdBy });
     return event;
   }
 
@@ -81,9 +91,15 @@ export class EventStorage {
   }
 
   deleteEvent(id: string): boolean {
-    if (id === DEFAULT_EVENT_ID) return false;
+    if (id === DEFAULT_EVENT_ID) {
+      logger.warn('Attempt to delete default event');
+      return false;
+    }
     const deleted = this.events.delete(id);
-    if (deleted) this.save();
+    if (deleted) {
+      this.save();
+      logger.info('Deleted event:', id);
+    }
     return deleted;
   }
 
@@ -92,6 +108,7 @@ export class EventStorage {
     if (!event || id === DEFAULT_EVENT_ID) return false;
     event.active = !event.active;
     this.save();
+    logger.info('Toggled event active status:', { id, active: event.active });
     return true;
   }
 

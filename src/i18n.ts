@@ -1,3 +1,5 @@
+import { config } from './config';
+
 // i18n translations
 const translations = {
   'en-US': {
@@ -32,6 +34,7 @@ const translations = {
     cannotDeleteDefault: "Cannot delete default event",
     backToEvents: "← Back to Events",
     deepLink: "Deep Link",
+    errorOccurred: "An error occurred. Please try again later.",
   },
   'ru-RU': {
     enterCityName: "Добро пожаловать на мероприятие!\n\nНапишите название вашего города:",
@@ -65,6 +68,7 @@ const translations = {
     cannotDeleteDefault: "Нельзя удалить стандартное мероприятие",
     backToEvents: "← К списку мероприятий",
     deepLink: "Deep Link",
+    errorOccurred: "Произошла ошибка. Пожалуйста, попробуйте позже.",
   },
 };
 
@@ -75,7 +79,7 @@ class I18n {
   private lang: Language;
 
   constructor() {
-    const envLang = (process.env.LANGUAGE || 'en-US').toLowerCase();
+    const envLang = config.language.toLowerCase();
     // Accept various formats: ru-RU, ru-ru, ruRU, ru
     const normalized = envLang.replace(/[_-]?ru/i, 'ru-RU').replace(/[_-]?en/i, 'en-US');
     this.lang = (normalized.includes('ru') ? 'ru-RU' : 'en-US') as Language;
