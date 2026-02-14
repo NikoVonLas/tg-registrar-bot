@@ -1,0 +1,299 @@
+import { Bot, Context, InlineKeyboard, InputFile } from "grammy";
+import { RegistrationStorage } from "./storage";
+import cities from "./data/cities.json";
+
+const storage = new RegistrationStorage();
+
+// Топ-15 самых популярных городов для быстрого выбора
+const TOP_CITIES = cities.slice(0, 15);
+
+// Callback data types
+const CB = {
+  LOCATION: 'use_location',
+  MANUAL: 'manual_select',
+  CITY: (city: string) => `city:${city}`,
+  SEARCH: 'search_city',
+  SEARCH_QUERY: (query: string) => `sq:${query}`,
+  BACK_TO_CITIES: 'back_to_cities',
+};
+
+function createTopCitiesKeyboard() {
+  const keyboard = new InlineKeyboard();
+
+  // Кнопки по 2 в ряд
+  for (let i = 0; i < TOP_CITIES.length; i += 2) {
+    keyboard.text(TOP_CITIES[i], CB.CITY(TOP_CITIES[i]));
+    if (i + 1 < TOP_CITIES.length) {
+      keyboard.text(TOP_CITIES[i + 1], CB.CITY(TOP_CITIES[i + 1]));
+    }
+    keyboard.row();
+  }
+
+  keyboard.text("🔍 Найти другой город", CB.SEARCH);
+
+  return keyboard;
+}
+
+function createLocationKeyboard() {
+  const keyboard = new InlineKeyboard()
+    .text("🏙 Выбрать город вручную", CB.MANUAL);
+
+  return keyboard;
+}
+
+function createSearchResultsKeyboard(query: string) {
+  const keyboard = new InlineKeyboard();
+
+  const filtered = cities.filter(city =>
+    city.toLowerCase().includes(query.toLowerCase())
+  ).slice(0, 20); // Максимум 20 результатов
+
+  if (filtered.length === 0) {
+    return null;
+  }
+
+  // По 2 кнопки в ряд
+  for (let i = 0; i < filtered.length; i += 2) {
+    keyboard.text(filtered[i], CB.CITY(filtered[i]));
+    if (i + 1 < filtered.length) {
+      keyboard.text(filtered[i + 1], CB.CITY(filtered[i + 1]));
+    }
+    keyboard.row();
+  }
+
+  keyboard.text("← Назад к топ-15", CB.BACK_TO_CITIES);
+
+  return keyboard;
+}
+
+async function handleCitySelection(ctx: Context, city: string) {
+  if (!ctx.from) return;
+
+  const registration = storage.register(ctx.from.id, city, {
+    username: ctx.from.username,
+    firstName: ctx.from.first_name,
+    lastName: ctx.from.last_name,
+  });
+
+  await ctx.editMessageText(
+    `✅ Отлично! Вы зарегистрированы.\n\n` +
+    `Ваш город: *${city}*\n` +
+    `Время регистрации: ${new Date(registration.registeredAt).toLocaleString('ru-RU')}\n\n` +
+    `Добро пожаловать на мероприятие! 🎉`,
+    { parse_mode: "Markdown" }
+  );
+}
+
+async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
+  // Простое определение ближайшего города по координатам
+  // Для продакшена лучше использовать API (Nominatim, Dadata и т.д.)
+  // Пока возвращаем null чтобы пользователь выбрал вручную
+  return null;
+}
+
+export default function setup(bot: Bot) {
+  // Команда /start - точка входа через QR-код
+  bot.command("start", async (ctx) => {
+    if (!ctx.from) return;
+
+    // Проверяем, зарегистрирован ли пользователь
+    if (storage.isRegistered(ctx.from.id)) {
+      const reg = storage.getRegistration(ctx.from.id);
+      await ctx.reply(
+        `Вы уже зарегистрированы!\n\n` +
+        `Ваш город: *${reg?.city}*\n` +
+        `Время регистрации: ${new Date(reg?.registeredAt || '').toLocaleString('ru-RU')}`,
+        { parse_mode: "Markdown" }
+      );
+      return;
+    }
+
+    // Новая регистрация
+    await ctx.reply(
+      `🎉 *Добро пожаловать на мероприятие!*\n\n` +
+      `Для регистрации, пожалуйста, выберите ваш город:\n\n` +
+      `📍 Вы можете поделиться местоположением (быстрее всего)\n` +
+      `🏙 Или выбрать город из списка`,
+      {
+        parse_mode: "Markdown",
+        reply_markup: createLocationKeyboard(),
+      }
+    );
+  });
+
+  // Геолокация
+  bot.on("message:location", async (ctx) => {
+    if (!ctx.from) return;
+
+    if (storage.isRegistered(ctx.from.id)) {
+      await ctx.reply("Вы уже зарегистрированы!");
+      return;
+    }
+
+    const { latitude, longitude } = ctx.message.location;
+    const city = await reverseGeocode(latitude, longitude);
+
+    if (city && cities.includes(city)) {
+      // Город определён - просим подтвердить
+      const keyboard = new InlineKeyboard()
+        .text("✅ Да, верно", CB.CITY(city))
+        .text("❌ Нет, выбрать другой", CB.MANUAL);
+
+      await ctx.reply(
+        `Ваш город: *${city}*?\n\nВсё верно?`,
+        { parse_mode: "Markdown", reply_markup: keyboard }
+      );
+    } else {
+      // Не смогли определить - предлагаем выбрать вручную
+      await ctx.reply(
+        `Не удалось точно определить город. Пожалуйста, выберите из списка:`,
+        { reply_markup: createTopCitiesKeyboard() }
+      );
+    }
+  });
+
+  // Callback: Выбор вручную
+  bot.callbackQuery(CB.MANUAL, async (ctx) => {
+    await ctx.editMessageText(
+      `Выберите ваш город из списка самых популярных:\n\n` +
+      `Или используйте поиск, если вашего города нет в списке.`,
+      { reply_markup: createTopCitiesKeyboard() }
+    );
+    await ctx.answerCallbackQuery();
+  });
+
+  // Callback: Выбор конкретного города
+  bot.callbackQuery(/^city:(.+)$/, async (ctx) => {
+    const city = ctx.match[1];
+
+    if (!cities.includes(city)) {
+      await ctx.answerCallbackQuery({ text: "❌ Некорректный город" });
+      return;
+    }
+
+    await handleCitySelection(ctx, city);
+    await ctx.answerCallbackQuery({ text: `✅ Город выбран: ${city}` });
+  });
+
+  // Callback: Поиск города
+  bot.callbackQuery(CB.SEARCH, async (ctx) => {
+    await ctx.editMessageText(
+      `🔍 *Поиск города*\n\n` +
+      `Напишите название вашего города (можно часть названия).\n` +
+      `Например: "Новосиб" найдёт "Новосибирск"`,
+      { parse_mode: "Markdown" }
+    );
+    await ctx.answerCallbackQuery();
+  });
+
+  // Callback: Назад к списку топ-15
+  bot.callbackQuery(CB.BACK_TO_CITIES, async (ctx) => {
+    await ctx.editMessageText(
+      `Выберите ваш город из списка самых популярных:\n\n` +
+      `Или используйте поиск, если вашего города нет в списке.`,
+      { reply_markup: createTopCitiesKeyboard() }
+    );
+    await ctx.answerCallbackQuery();
+  });
+
+  // Текстовый поиск города
+  bot.on("message:text", async (ctx) => {
+    if (!ctx.from) return;
+
+    // Игнорируем команды
+    if (ctx.message.text.startsWith("/")) return;
+
+    // Если уже зарегистрирован
+    if (storage.isRegistered(ctx.from.id)) {
+      return;
+    }
+
+    const query = ctx.message.text.trim();
+
+    if (query.length < 2) {
+      await ctx.reply("Введите минимум 2 символа для поиска.");
+      return;
+    }
+
+    const keyboard = createSearchResultsKeyboard(query);
+
+    if (!keyboard) {
+      await ctx.reply(
+        `😞 Не найдено городов по запросу "*${query}*"\n\n` +
+        `Попробуйте другой вариант или выберите из топ-15.`,
+        {
+          parse_mode: "Markdown",
+          reply_markup: new InlineKeyboard().text("← К списку городов", CB.BACK_TO_CITIES),
+        }
+      );
+      return;
+    }
+
+    await ctx.reply(
+      `Результаты поиска по "*${query}*":`,
+      { parse_mode: "Markdown", reply_markup: keyboard }
+    );
+  });
+
+  // Команда для админа: статистика
+  bot.command("stats", async (ctx) => {
+    const adminId = process.env.ADMIN_USER_ID;
+
+    if (adminId && ctx.from?.id.toString() !== adminId) {
+      await ctx.reply("У вас нет доступа к этой команде.");
+      return;
+    }
+
+    const stats = storage.getStats();
+
+    let message = `📊 *Статистика регистраций*\n\n`;
+    message += `👥 Всего зарегистрировано: *${stats.total}*\n\n`;
+    message += `🏙 *По городам:*\n`;
+
+    const topCities = Object.entries(stats.byCities).slice(0, 20);
+    for (const [city, count] of topCities) {
+      message += `• ${city}: ${count}\n`;
+    }
+
+    if (Object.keys(stats.byCities).length > 20) {
+      message += `\n_...и ещё ${Object.keys(stats.byCities).length - 20} городов_`;
+    }
+
+    await ctx.reply(message, { parse_mode: "Markdown" });
+  });
+
+  // Команда для экспорта данных (для админа)
+  bot.command("export", async (ctx) => {
+    const adminId = process.env.ADMIN_USER_ID;
+
+    if (adminId && ctx.from?.id.toString() !== adminId) {
+      await ctx.reply("У вас нет доступа к этой команде.");
+      return;
+    }
+
+    const registrations = storage.getAllRegistrations();
+
+    let csv = "UserID,Username,FirstName,LastName,City,RegisteredAt\n";
+    for (const reg of registrations) {
+      csv += `${reg.userId},"${reg.username || ''}","${reg.firstName || ''}","${reg.lastName || ''}","${reg.city}","${reg.registeredAt}"\n`;
+    }
+
+    await ctx.replyWithDocument(
+      new InputFile(Buffer.from(csv, 'utf-8'), `registrations_${Date.now()}.csv`),
+      { caption: `📥 Экспорт данных: ${registrations.length} записей` }
+    );
+  });
+
+  // Помощь
+  bot.command("help", async (ctx) => {
+    await ctx.reply(
+      `ℹ️ *Команды бота:*\n\n` +
+      `/start - Регистрация на мероприятие\n` +
+      `/help - Эта справка\n\n` +
+      `_Для администраторов:_\n` +
+      `/stats - Статистика регистраций\n` +
+      `/export - Экспорт данных в CSV`,
+      { parse_mode: "Markdown" }
+    );
+  });
+}
