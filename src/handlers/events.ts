@@ -82,7 +82,7 @@ export function registerEventsHandlers(
       }),
       {
         parse_mode: "Markdown",
-        reply_markup: createEventInfoKeyboard(eventId, eventStorage.getDefaultEventId())
+        reply_markup: createEventInfoKeyboard(eventId)
       }
     );
     await ctx.answerCallbackQuery();
@@ -119,15 +119,6 @@ export function registerEventsHandlers(
     }
 
     const eventId = ctx.match[1];
-
-    if (eventId === eventStorage.getDefaultEventId()) {
-      await ctx.answerCallbackQuery({
-        text: i18n.t("cannotDeleteDefault"),
-        show_alert: true
-      });
-      return;
-    }
-
     const deleted = eventStorage.deleteEvent(eventId);
 
     if (deleted) {

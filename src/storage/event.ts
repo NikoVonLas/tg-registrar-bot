@@ -13,7 +13,6 @@ export interface Event {
 }
 
 const EVENTS_FILE = path.join(config.dataDir, 'events.json');
-const DEFAULT_EVENT_ID = 'default';
 
 export class EventStorage {
   private events: Map<string, Event> = new Map();
@@ -21,7 +20,6 @@ export class EventStorage {
   constructor() {
     this.ensureDataDir();
     this.load();
-    this.ensureDefaultEvent();
   }
 
   private ensureDataDir() {
@@ -31,12 +29,6 @@ export class EventStorage {
     }
   }
 
-  private ensureDefaultEvent() {
-    if (!this.events.has(DEFAULT_EVENT_ID)) {
-      this.createEvent('Default Event', 0, DEFAULT_EVENT_ID);
-      logger.info('Created default event');
-    }
-  }
 
   private load() {
     if (fs.existsSync(EVENTS_FILE)) {
@@ -91,10 +83,6 @@ export class EventStorage {
   }
 
   deleteEvent(id: string): boolean {
-    if (id === DEFAULT_EVENT_ID) {
-      logger.warn('Attempt to delete default event');
-      return false;
-    }
     const deleted = this.events.delete(id);
     if (deleted) {
       this.save();
@@ -105,14 +93,10 @@ export class EventStorage {
 
   toggleActive(id: string): boolean {
     const event = this.events.get(id);
-    if (!event || id === DEFAULT_EVENT_ID) return false;
+    if (!event) return false;
     event.active = !event.active;
     this.save();
     logger.info('Toggled event active status:', { id, active: event.active });
     return true;
-  }
-
-  getDefaultEventId(): string {
-    return DEFAULT_EVENT_ID;
   }
 }

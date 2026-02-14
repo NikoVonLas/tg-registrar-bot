@@ -31,16 +31,13 @@ export function createEventsListKeyboard(
   return keyboard;
 }
 
-export function createEventInfoKeyboard(eventId: string, defaultEventId: string) {
+export function createEventInfoKeyboard(eventId: string) {
   const keyboard = new InlineKeyboard()
     .text(i18n.t("deepLink"), CB.EVENT_DEEPLINK(eventId))
-    .row();
-
-  if (eventId !== defaultEventId) {
-    keyboard.text(i18n.t("deleteEvent"), CB.EVENT_DELETE(eventId)).row();
-  }
-
-  keyboard.text(i18n.t("backToEvents"), CB.EVENT_LIST);
+    .row()
+    .text(i18n.t("deleteEvent"), CB.EVENT_DELETE(eventId))
+    .row()
+    .text(i18n.t("backToEvents"), CB.EVENT_LIST);
   return keyboard;
 }
 

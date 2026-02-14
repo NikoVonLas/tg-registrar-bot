@@ -1,7 +1,7 @@
 import { Bot } from "grammy";
 import { i18n } from "../i18n";
 import { logger } from "../logger";
-import { EventStorage, RegistrationStorage } from "../storage";
+import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "../storage";
 import { UserStateManager } from "../shared/state";
 import { isAdmin } from "../shared/auth";
 import { createAdminMenuKeyboard } from "../shared/keyboards";
@@ -10,6 +10,7 @@ export function registerStartHandler(
   bot: Bot,
   eventStorage: EventStorage,
   storage: RegistrationStorage,
+  attemptStorage: RegistrationAttemptStorage,
   stateManager: UserStateManager
 ) {
   bot.command("start", async (ctx) => {
@@ -21,9 +22,9 @@ export function registerStartHandler(
     // Parse event ID from deep link parameter
     const payload = ctx.match;
 
-    // If no payload and user is admin, show admin menu
+    // If no payload and user is admin, show admin menu (events list)
     if (!payload && isAdmin(ctx.from.id)) {
-      logger.info('Admin accessed /start without payload, showing admin menu:', {
+      logger.info('Admin accessed /start without payload, showing events list:', {
         userId: ctx.from.id
       });
       await ctx.reply(i18n.t("adminMenu"), {
@@ -32,7 +33,16 @@ export function registerStartHandler(
       return;
     }
 
-    const eventId = payload || eventStorage.getDefaultEventId();
+    // If no payload and user is not admin, require event link
+    if (!payload) {
+      logger.warn('User accessed /start without event link:', {
+        userId: ctx.from.id
+      });
+      await ctx.reply(i18n.t("requireEventLink"));
+      return;
+    }
+
+    const eventId = payload;
 
     logger.info('Start command:', {
       userId: ctx.from.id,
@@ -68,6 +78,13 @@ export function registerStartHandler(
 
     // Store eventId in user state for registration
     stateManager.set(ctx.from.id, 'registering', { eventId });
+
+    // Record registration attempt
+    attemptStorage.recordAttempt(ctx.from.id, eventId, {
+      username: ctx.from.username,
+      firstName: ctx.from.first_name,
+      lastName: ctx.from.last_name,
+    });
 
     await ctx.reply(i18n.t("enterCityName"));
   });

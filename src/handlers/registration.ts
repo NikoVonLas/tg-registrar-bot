@@ -3,7 +3,7 @@ import { i18n } from "../i18n";
 import { logger } from "../logger";
 import { CB } from "../shared/callbacks";
 import { createTypoCorrectionKeyboard } from "../shared/keyboards";
-import { RegistrationStorage, EventStorage } from "../storage";
+import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "../storage";
 import { UserStateManager } from "../shared/state";
 import { findClosestCity } from "../utils/levenshtein";
 import cities from "../data/cities.json";
@@ -17,6 +17,7 @@ async function handleCitySelection(
   eventId: string,
   city: string,
   storage: RegistrationStorage,
+  attemptStorage: RegistrationAttemptStorage,
   stateManager: UserStateManager
 ) {
   if (!ctx.from) return;
@@ -33,6 +34,9 @@ async function handleCitySelection(
     city
   });
 
+  // Remove registration attempt since they completed registration
+  attemptStorage.removeAttempt(ctx.from.id, eventId);
+
   await ctx.editMessageText(
     i18n.t("registrationComplete", {
       city,
@@ -46,25 +50,31 @@ async function handleCitySelection(
 
 function getUserEventId(
   ctx: Context,
-  stateManager: UserStateManager,
-  eventStorage: EventStorage
-): string {
-  // Get eventId from user state or default
+  stateManager: UserStateManager
+): string | null {
+  // Get eventId from user state
   const state = stateManager.get(ctx.from?.id || 0);
-  return state?.data?.eventId || eventStorage.getDefaultEventId();
+  return state?.data?.eventId || null;
 }
 
 export function registerRegistrationHandlers(
   bot: Bot,
   storage: RegistrationStorage,
   eventStorage: EventStorage,
+  attemptStorage: RegistrationAttemptStorage,
   stateManager: UserStateManager
 ) {
   // CONFIRM_TYPO callback - user confirms suggested city
   bot.callbackQuery(/^typo:yes:(.+):(.+)$/, async (ctx) => {
     const original = ctx.match[1];
     const suggested = ctx.match[2];
-    const eventId = getUserEventId(ctx, stateManager, eventStorage);
+    const eventId = getUserEventId(ctx, stateManager);
+
+    if (!eventId) {
+      logger.warn('No eventId in typo confirmation');
+      await ctx.answerCallbackQuery({ text: i18n.t("errorOccurred"), show_alert: true });
+      return;
+    }
 
     logger.debug('Typo confirmation:', {
       userId: ctx.from?.id,
@@ -73,14 +83,20 @@ export function registerRegistrationHandlers(
       eventId
     });
 
-    await handleCitySelection(ctx, eventId, suggested, storage, stateManager);
+    await handleCitySelection(ctx, eventId, suggested, storage, attemptStorage, stateManager);
     await ctx.answerCallbackQuery({ text: i18n.t("citySaved", { city: suggested }) });
   });
 
   // KEEP_ORIGINAL callback - user keeps their original input
   bot.callbackQuery(/^typo:no:(.+)$/, async (ctx) => {
     const original = ctx.match[1];
-    const eventId = getUserEventId(ctx, stateManager, eventStorage);
+    const eventId = getUserEventId(ctx, stateManager);
+
+    if (!eventId) {
+      logger.warn('No eventId in keep original');
+      await ctx.answerCallbackQuery({ text: i18n.t("errorOccurred"), show_alert: true });
+      return;
+    }
 
     logger.debug('Keep original city:', {
       userId: ctx.from?.id,
@@ -88,7 +104,7 @@ export function registerRegistrationHandlers(
       eventId
     });
 
-    await handleCitySelection(ctx, eventId, original, storage, stateManager);
+    await handleCitySelection(ctx, eventId, original, storage, attemptStorage, stateManager);
     await ctx.answerCallbackQuery({ text: i18n.t("citySaved", { city: original }) });
   });
 
@@ -187,6 +203,9 @@ export function registerRegistrationHandlers(
         city: exactMatch
       });
 
+      // Remove registration attempt since they completed registration
+      attemptStorage.removeAttempt(ctx.from.id, eventId);
+
       await ctx.reply(
         i18n.t("registrationComplete", {
           city: exactMatch,
@@ -229,6 +248,9 @@ export function registerRegistrationHandlers(
       eventId,
       city: input
     });
+
+    // Remove registration attempt since they completed registration
+    attemptStorage.removeAttempt(ctx.from.id, eventId);
 
     await ctx.reply(
       i18n.t("registrationComplete", {

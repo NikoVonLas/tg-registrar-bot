@@ -1,7 +1,7 @@
 import { Bot } from "grammy";
 import { config } from "./config";
 import { logger } from "./logger";
-import { RegistrationStorage, EventStorage } from "./storage";
+import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "./storage";
 import { UserStateManager } from "./shared/state";
 import { registerHelpHandler } from "./handlers/help";
 import { registerErrorHandler } from "./handlers/errors";
@@ -13,14 +13,15 @@ import { registerRegistrationHandlers } from "./handlers/registration";
 // Initialize storage and state
 const storage = new RegistrationStorage();
 const eventStorage = new EventStorage();
+const attemptStorage = new RegistrationAttemptStorage();
 const stateManager = new UserStateManager();
 
 export default function setup(bot: Bot) {
   logger.info('Setting up bot handlers...');
 
   // Register all handlers
-  registerStartHandler(bot, eventStorage, storage, stateManager);
-  registerRegistrationHandlers(bot, storage, eventStorage, stateManager);
+  registerStartHandler(bot, eventStorage, storage, attemptStorage, stateManager);
+  registerRegistrationHandlers(bot, storage, eventStorage, attemptStorage, stateManager);
   registerAdminHandlers(bot, storage);
   registerEventsHandlers(bot, storage, eventStorage, stateManager);
   registerHelpHandler(bot);
