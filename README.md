@@ -10,7 +10,8 @@ Telegram bot for event registration via QR codes with city tracking.
 ## Features
 
 - QR-code based registration flow
-- City selection: top-15 list, text search (160+ Russian cities), geolocation (stub)
+- City selection: top-15 list, text search (160+ Russian cities)
+- Multi-language: English (default), Russian (via `LANGUAGE=ru`)
 - Admin commands: `/stats`, `/export` (CSV)
 - JSON storage (up to 10k registrations)
 - Bot Platform compatible
