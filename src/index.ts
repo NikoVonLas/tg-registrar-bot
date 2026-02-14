@@ -7,6 +7,18 @@ const storage = new RegistrationStorage();
 // Топ-15 самых популярных городов для быстрого выбора
 const TOP_CITIES = cities.slice(0, 15);
 
+// Check if user is admin
+function isAdmin(userId: number): boolean {
+  // Bot Platform passes admins via BOT_ADMIN_IDS (comma-separated)
+  const adminIds = process.env.BOT_ADMIN_IDS?.split(',').map(id => id.trim()) || [];
+
+  // Fallback to legacy ADMIN_USER_ID for backwards compatibility
+  const legacyAdminId = process.env.ADMIN_USER_ID;
+  if (legacyAdminId) adminIds.push(legacyAdminId);
+
+  return adminIds.includes(userId.toString());
+}
+
 // Callback data types
 const CB = {
   LOCATION: 'use_location',
@@ -36,7 +48,7 @@ function createTopCitiesKeyboard() {
 
 function createLocationKeyboard() {
   const keyboard = new InlineKeyboard()
-    .text("🏙 Выбрать город вручную", CB.MANUAL);
+    .text("Выбрать город вручную", CB.MANUAL);
 
   return keyboard;
 }
@@ -76,7 +88,7 @@ async function handleCitySelection(ctx: Context, city: string) {
   });
 
   await ctx.editMessageText(
-    `✅ Отлично! Вы зарегистрированы.\n\n` +
+    `Отлично! Вы зарегистрированы.\n\n` +
     `Ваш город: *${city}*\n` +
     `Время регистрации: ${new Date(registration.registeredAt).toLocaleString('ru-RU')}\n\n` +
     `Добро пожаловать на мероприятие! 🎉`,
@@ -110,10 +122,10 @@ export default function setup(bot: Bot) {
 
     // Новая регистрация
     await ctx.reply(
-      `🎉 *Добро пожаловать на мероприятие!*\n\n` +
+      `*Добро пожаловать на мероприятие!*\n\n` +
       `Для регистрации, пожалуйста, выберите ваш город:\n\n` +
       `📍 Вы можете поделиться местоположением (быстрее всего)\n` +
-      `🏙 Или выбрать город из списка`,
+      `Или выбрать город из списка`,
       {
         parse_mode: "Markdown",
         reply_markup: createLocationKeyboard(),
@@ -136,7 +148,7 @@ export default function setup(bot: Bot) {
     if (city && cities.includes(city)) {
       // Город определён - просим подтвердить
       const keyboard = new InlineKeyboard()
-        .text("✅ Да, верно", CB.CITY(city))
+        .text("Да, верно", CB.CITY(city))
         .text("❌ Нет, выбрать другой", CB.MANUAL);
 
       await ctx.reply(
@@ -172,7 +184,7 @@ export default function setup(bot: Bot) {
     }
 
     await handleCitySelection(ctx, city);
-    await ctx.answerCallbackQuery({ text: `✅ Город выбран: ${city}` });
+    await ctx.answerCallbackQuery({ text: `Город выбран: ${city}` });
   });
 
   // Callback: Поиск города
@@ -237,18 +249,16 @@ export default function setup(bot: Bot) {
 
   // Команда для админа: статистика
   bot.command("stats", async (ctx) => {
-    const adminId = process.env.ADMIN_USER_ID;
-
-    if (adminId && ctx.from?.id.toString() !== adminId) {
+    if (!ctx.from || !isAdmin(ctx.from.id)) {
       await ctx.reply("У вас нет доступа к этой команде.");
       return;
     }
 
     const stats = storage.getStats();
 
-    let message = `📊 *Статистика регистраций*\n\n`;
-    message += `👥 Всего зарегистрировано: *${stats.total}*\n\n`;
-    message += `🏙 *По городам:*\n`;
+    let message = `*Статистика регистраций*\n\n`;
+    message += `Всего зарегистрировано: *${stats.total}*\n\n`;
+    message += `*По городам:*\n`;
 
     const topCities = Object.entries(stats.byCities).slice(0, 20);
     for (const [city, count] of topCities) {
@@ -264,9 +274,7 @@ export default function setup(bot: Bot) {
 
   // Команда для экспорта данных (для админа)
   bot.command("export", async (ctx) => {
-    const adminId = process.env.ADMIN_USER_ID;
-
-    if (adminId && ctx.from?.id.toString() !== adminId) {
+    if (!ctx.from || !isAdmin(ctx.from.id)) {
       await ctx.reply("У вас нет доступа к этой команде.");
       return;
     }
@@ -280,7 +288,7 @@ export default function setup(bot: Bot) {
 
     await ctx.replyWithDocument(
       new InputFile(Buffer.from(csv, 'utf-8'), `registrations_${Date.now()}.csv`),
-      { caption: `📥 Экспорт данных: ${registrations.length} записей` }
+      { caption: `Экспорт данных: ${registrations.length} записей` }
     );
   });
 

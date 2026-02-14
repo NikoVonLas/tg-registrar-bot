@@ -42,8 +42,10 @@ curl -X POST http://localhost:3000/bots \
 # Запустить (замените {id})
 curl -X POST http://localhost:3000/bots/{id}/start \
   -H "Content-Type: application/json" \
-  -d '{"env":{"BOT_TOKEN":"ВАШ_ТОКЕН","ADMIN_USER_ID":"ВАШ_ID"}}'
+  -d '{"env":{"BOT_TOKEN":"ВАШ_ТОКЕН"}}'
 ```
+
+**Примечание:** Bot Platform автоматически прокидывает `BOT_ADMIN_IDS` с ID админов платформы.
 
 ## Команды
 

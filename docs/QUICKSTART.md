@@ -6,7 +6,6 @@
 
 1. Open [@BotFather](https://t.me/BotFather), send `/newbot`
 2. Save token: `123456789:ABCdef...`
-3. Get your ID from [@userinfobot](https://t.me/userinfobot): `987654321`
 
 ## Run Bot
 
@@ -17,15 +16,17 @@ curl -X POST http://localhost:3000/bots \
   -d '{"name":"event-reg","runtime":"swarm","sourceType":"local","source":"./tgbots/prohodka"}'
 
 curl -X POST http://localhost:3000/bots/{id}/start \
-  -d '{"env":{"BOT_TOKEN":"YOUR_TOKEN","ADMIN_USER_ID":"YOUR_ID"}}'
+  -d '{"env":{"BOT_TOKEN":"YOUR_TOKEN"}}'
 ```
+
+Admin IDs are automatically injected by Bot Platform.
 
 ### Locally
 
 ```bash
 npm install
 cp .env.example .env
-# Edit .env: BOT_TOKEN and ADMIN_USER_ID
+# Edit .env: BOT_TOKEN and BOT_ADMIN_IDS (your ID from @userinfobot)
 npm run dev
 ```
 
@@ -43,6 +44,6 @@ npm run dev
 ## Troubleshooting
 
 **Bot not responding:** Check token, verify bot running, check logs  
-**Admin commands fail:** Verify ADMIN_USER_ID matches your ID
+**Admin commands fail:** Verify BOT_ADMIN_IDS contains your ID
 
 See [DEPLOYMENT](./DEPLOYMENT.md) for details.

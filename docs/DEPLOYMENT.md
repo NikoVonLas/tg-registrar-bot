@@ -5,15 +5,14 @@
 ## Prerequisites
 
 1. Bot token from [@BotFather](https://t.me/BotFather)
-2. Admin User ID from [@userinfobot](https://t.me/userinfobot)
-3. QR code: https://qr-code-generator.com
+2. QR code: https://qr-code-generator.com
 
 ## Local Development
 
 ```bash
 npm install
 cp .env.example .env
-# Edit .env: BOT_TOKEN, ADMIN_USER_ID
+# Edit .env: BOT_TOKEN, BOT_ADMIN_IDS (your ID from @userinfobot)
 npm run dev
 ```
 
@@ -26,9 +25,9 @@ npm run dev
 curl -X POST http://localhost:3000/bots \
   -d '{"name":"event-reg","runtime":"swarm","sourceType":"local","source":"./tgbots/prohodka"}'
 
-# Start
+# Start (admin IDs auto-injected)
 curl -X POST http://localhost:3000/bots/{id}/start \
-  -d '{"env":{"BOT_TOKEN":"...","ADMIN_USER_ID":"..."}}'
+  -d '{"env":{"BOT_TOKEN":"..."}}'
 ```
 
 ### Verify
@@ -74,7 +73,10 @@ curl -X POST https://domain/w/{id}/webhook -d '{}' # Test webhook
 
 ### Admin Commands Fail
 
-Verify `ADMIN_USER_ID` environment variable matches your Telegram User ID.
+Verify `BOT_ADMIN_IDS` environment variable contains your Telegram User ID.
+
+For local dev: set in `.env` file  
+For Bot Platform: automatically injected
 
 ### Data Not Persisting
 

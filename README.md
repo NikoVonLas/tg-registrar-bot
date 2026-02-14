@@ -42,8 +42,10 @@ curl -X POST http://localhost:3000/bots \
 # Start bot (replace {id})
 curl -X POST http://localhost:3000/bots/{id}/start \
   -H "Content-Type: application/json" \
-  -d '{"env":{"BOT_TOKEN":"YOUR_TOKEN","ADMIN_USER_ID":"YOUR_ID"}}'
+  -d '{"env":{"BOT_TOKEN":"YOUR_TOKEN"}}'
 ```
+
+**Note:** Bot Platform automatically injects `BOT_ADMIN_IDS` with platform admin IDs.
 
 ## Commands
 
