@@ -5,7 +5,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn src/index.ts",
-    "build": "tsc -b"
+    "build": "tsc -b && tsc-alias"
   },
   "keywords": [
     "telegram",
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/node": "^20.10.6",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.3.3"
   },
   "bot": {
