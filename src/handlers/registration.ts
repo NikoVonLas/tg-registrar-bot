@@ -10,6 +10,7 @@ import cities from "../data/cities.json";
 import { isAdmin } from "../shared/auth";
 import { handleEventCreationText } from "./events";
 import { generateQRCodePDF } from "../utils/qrcode";
+import { escapeMarkdown } from "../utils/markdown";
 
 async function handleCitySelection(
   ctx: Context,
@@ -128,7 +129,7 @@ export function registerRegistrationHandlers(
         await ctx.replyWithDocument(
           new InputFile(pdfBuffer, `event_${result.event.id}_qr.pdf`),
           {
-            caption: `✅ Мероприятие создано!\n\n📋 Название: ${result.event.name}\n\n🔗 Deep link:\n${deepLink}`,
+            caption: `✅ Мероприятие создано!\n\n📋 Название: ${escapeMarkdown(result.event.name)}\n\n🔗 Deep link:\n${escapeMarkdown(deepLink)}`,
             parse_mode: "Markdown"
           }
         );
