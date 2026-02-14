@@ -3,7 +3,7 @@ import { i18n, log } from "@/utils/sdk-helpers";
 import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
 import { UserStateManager } from "@/shared/state";
 import { isAdmin } from "@/shared/auth";
-import { createEventListKeyboard } from "@/shared/keyboards";
+import { createEventListKeyboard, createAdminReplyKeyboard } from "@/shared/keyboards";
 
 export function registerStartHandler(
   bot: Bot,
@@ -21,13 +21,13 @@ export function registerStartHandler(
     // Parse event ID from deep link parameter
     const payload = ctx.match;
 
-    // If no payload and user is admin, show events list
+    // If no payload and user is admin, show admin keyboard
     if (!payload && isAdmin(ctx.from.id)) {
-      log.info('Admin accessed /start without payload, showing events list:', {
+      log.info('Admin accessed /start without payload, showing admin keyboard:', {
         userId: ctx.from.id
       });
-      await ctx.reply(i18n.t("eventsList"), {
-        reply_markup: createEventListKeyboard(eventStorage, storage, 0)
+      await ctx.reply("👋 Привет, админ! Используй кнопки ниже:", {
+        reply_markup: createAdminReplyKeyboard()
       });
       return;
     }

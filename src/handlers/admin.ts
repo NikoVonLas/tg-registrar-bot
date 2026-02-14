@@ -14,6 +14,20 @@ export function registerAdminHandlers(
   eventStorage: EventStorage,
   attemptStorage: RegistrationAttemptStorage
 ) {
+  // Handle reply keyboard button "Админ панель"
+  bot.hears("📊 Админ панель", async (ctx) => {
+    if (!ctx.from || !isAdmin(ctx.from.id)) {
+      await ctx.reply(i18n.t("noAccess"));
+      return;
+    }
+
+    log.info('Admin panel button pressed:', { userId: ctx.from.id });
+
+    await ctx.reply(i18n.t("eventsList"), {
+      reply_markup: createEventListKeyboard(eventStorage, storage, 0)
+    });
+  });
+
   // /admin command - shows event list
   bot.command("admin", async (ctx) => {
     if (!ctx.from) {

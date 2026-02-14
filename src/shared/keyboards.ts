@@ -1,8 +1,18 @@
-import { InlineKeyboard } from "grammy";
+import { InlineKeyboard, Keyboard } from "grammy";
 import { i18n } from "@/utils/sdk-helpers";
 import { CB } from "@/shared/callbacks";
 import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
 import { Event } from "@/storage";
+
+/**
+ * Create admin reply keyboard (persistent keyboard at bottom)
+ */
+export function createAdminReplyKeyboard() {
+  return new Keyboard()
+    .text("📊 Админ панель").row()
+    .text("❓ Помощь")
+    .resized();
+}
 
 export function createTypoCorrectionKeyboard(input: string, suggested: string) {
   return new InlineKeyboard()
