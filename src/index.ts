@@ -22,7 +22,17 @@ function isAdmin(userId: number): boolean {
     adminIds.push(...process.env.BOT_ADMIN_IDS.split(',').map(id => id.trim()));
   }
 
-  return adminIds.includes(userId.toString());
+  const isAdminUser = adminIds.includes(userId.toString());
+  console.log('[DEBUG] isAdmin check:', {
+    userId,
+    userIdStr: userId.toString(),
+    adminIds,
+    BOT_OWNER_ID: process.env.BOT_OWNER_ID,
+    BOT_ADMIN_IDS: process.env.BOT_ADMIN_IDS,
+    result: isAdminUser
+  });
+
+  return isAdminUser;
 }
 
 const CB = {
