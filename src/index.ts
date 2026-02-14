@@ -50,7 +50,7 @@ async function handleCitySelection(ctx: Context, city: string) {
   await ctx.editMessageText(
     i18n.t("registrationComplete", {
       city,
-      time: new Date(registration.registeredAt).toLocaleString()
+      time: i18n.formatDateTime(new Date(registration.registeredAt))
     }),
     { parse_mode: "Markdown" }
   );
@@ -64,7 +64,7 @@ export default function setup(bot: Bot) {
       await ctx.reply(
         i18n.t("alreadyRegistered", {
           city: reg?.city || "",
-          time: new Date(reg?.registeredAt || '').toLocaleString()
+          time: i18n.formatDateTime(new Date(reg?.registeredAt || ''))
         }),
         { parse_mode: "Markdown" }
       );
@@ -107,7 +107,7 @@ export default function setup(bot: Bot) {
       await ctx.reply(
         i18n.t("registrationComplete", {
           city: exactMatch,
-          time: new Date(registration.registeredAt).toLocaleString()
+          time: i18n.formatDateTime(new Date(registration.registeredAt))
         }),
         { parse_mode: "Markdown" }
       );
@@ -138,7 +138,7 @@ export default function setup(bot: Bot) {
     await ctx.reply(
       i18n.t("registrationComplete", {
         city: input,
-        time: new Date(registration.registeredAt).toLocaleString()
+        time: i18n.formatDateTime(new Date(registration.registeredAt))
       }),
       { parse_mode: "Markdown" }
     );

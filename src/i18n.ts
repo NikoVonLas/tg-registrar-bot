@@ -67,6 +67,16 @@ class I18n {
     return text;
   }
 
+  formatDateTime(date: Date): string {
+    return date.toLocaleString(this.lang, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   get language(): Language {
     return this.lang;
   }
