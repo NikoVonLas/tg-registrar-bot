@@ -42,37 +42,23 @@ export async function generateQRCodePDF(data: string, eventName: string): Promis
         });
         doc.on('error', reject);
 
-        // Calculate maximum QR code size (leave space for text at bottom)
+        // Calculate maximum QR code size (fill entire page)
         const pageWidth = doc.page.width - 60; // 30px margin on each side
         const pageHeight = doc.page.height - 60;
-        const textHeight = 80; // Space for text at bottom
-        const availableHeight = pageHeight - textHeight;
 
-        // Use the smaller of width or available height to keep QR square
-        const qrSize = Math.min(pageWidth, availableHeight);
+        // Use the smaller of width or height to keep QR square
+        const qrSize = Math.min(pageWidth, pageHeight);
 
-        // Center QR code horizontally and position at top
+        // Center QR code on page
         const xPosition = (doc.page.width - qrSize) / 2;
-        const yPosition = 30;
+        const yPosition = (doc.page.height - qrSize) / 2;
 
-        // Draw QR code image
+        // Draw QR code image (fills entire page)
         doc.image(qrBuffer, xPosition, yPosition, {
           width: qrSize,
           height: qrSize,
           align: 'center'
         });
-
-        // Add registration text below QR code
-        const textY = yPosition + qrSize + 20;
-        const registrationText = i18n.t('registration' as any) || 'Registration';
-
-        doc.fontSize(32)
-          .font('Helvetica-Bold')
-          .fillColor('black')
-          .text(registrationText, 30, textY, {
-            width: pageWidth,
-            align: 'center'
-          });
 
         doc.end();
       } catch (error) {
