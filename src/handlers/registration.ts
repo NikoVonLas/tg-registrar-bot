@@ -1,4 +1,4 @@
-import { Bot, Context } from "grammy";
+import { Bot, Context, InputFile } from "grammy";
 import { i18n } from "../i18n";
 import { logger } from "../logger";
 import { CB } from "../shared/callbacks";
@@ -9,6 +9,7 @@ import { findClosestCity } from "../utils/levenshtein";
 import cities from "../data/cities.json";
 import { isAdmin } from "../shared/auth";
 import { handleEventCreationText } from "./events";
+import { generateQRCodePDF } from "../utils/qrcode";
 
 async function handleCitySelection(
   ctx: Context,
@@ -112,6 +113,9 @@ export function registerRegistrationHandlers(
       }
 
       const botInfo = await ctx.api.getMe();
+      const deepLink = `https://t.me/${botInfo.username}?start=${result.event.id}`;
+
+      // Send event creation confirmation
       await ctx.reply(
         i18n.t("eventCreated", {
           name: result.event.name,
@@ -120,6 +124,29 @@ export function registerRegistrationHandlers(
         }),
         { parse_mode: "Markdown" }
       );
+
+      // Generate and send QR code PDF
+      try {
+        logger.info('Generating QR code PDF for event:', {
+          eventId: result.event.id,
+          deepLink
+        });
+
+        const pdfBuffer = await generateQRCodePDF(deepLink, result.event.name);
+
+        await ctx.replyWithDocument(
+          new InputFile(pdfBuffer, `event_${result.event.id}_qr.pdf`),
+          {
+            caption: `QR Code for event: ${result.event.name}\n\nDeep link: ${deepLink}`
+          }
+        );
+
+        logger.info('QR code PDF sent successfully:', { eventId: result.event.id });
+      } catch (error) {
+        logger.error('Failed to generate/send QR code PDF:', error);
+        await ctx.reply('⚠️ Failed to generate QR code. Event was created successfully.');
+      }
+
       return;
     }
 
