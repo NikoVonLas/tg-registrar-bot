@@ -35,6 +35,7 @@ const translations = {
     backToEvents: "← Back to Events",
     deepLink: "Deep Link",
     errorOccurred: "An error occurred. Please try again later.",
+    registration: "Registration",
   },
   'ru-RU': {
     enterCityName: "Добро пожаловать на мероприятие!\n\nНапишите название вашего города:",
@@ -69,6 +70,7 @@ const translations = {
     backToEvents: "← К списку мероприятий",
     deepLink: "Deep Link",
     errorOccurred: "Произошла ошибка. Пожалуйста, попробуйте позже.",
+    registration: "Регистрация",
   },
 };
 
