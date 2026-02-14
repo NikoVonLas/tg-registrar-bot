@@ -2,9 +2,9 @@ import { Bot, Context, InlineKeyboard, InputFile } from "grammy";
 import { RegistrationStorage } from "./storage";
 import { i18n } from "./i18n";
 import cities from "./data/cities.json";
+import { findClosestCity } from "./levenshtein";
 
 const storage = new RegistrationStorage();
-const TOP_CITIES = cities.slice(0, 15);
 
 function isAdmin(userId: number): boolean {
   const adminIds: string[] = [];
@@ -22,26 +22,13 @@ function isAdmin(userId: number): boolean {
 
 const CB = {
   CITY: (city: string) => `city:${city}`,
-  SEARCH: 'search_city',
-  BACK_TO_CITIES: 'back_to_cities',
+  CONFIRM_TYPO: (original: string, suggested: string) => `typo:yes:${original}:${suggested}`,
+  KEEP_ORIGINAL: (original: string) => `typo:no:${original}`,
   ADMIN_TOTAL: 'admin_total',
   ADMIN_CITIES: 'admin_cities',
   ADMIN_EXPORT: 'admin_export',
   ADMIN_MENU: 'admin_menu',
 };
-
-function createTopCitiesKeyboard() {
-  const keyboard = new InlineKeyboard();
-  for (let i = 0; i < TOP_CITIES.length; i += 2) {
-    keyboard.text(TOP_CITIES[i], CB.CITY(TOP_CITIES[i]));
-    if (i + 1 < TOP_CITIES.length) {
-      keyboard.text(TOP_CITIES[i + 1], CB.CITY(TOP_CITIES[i + 1]));
-    }
-    keyboard.row();
-  }
-  keyboard.text(i18n.t("findAnotherCity"), CB.SEARCH);
-  return keyboard;
-}
 
 function createAdminMenuKeyboard() {
   const keyboard = new InlineKeyboard()
@@ -50,23 +37,6 @@ function createAdminMenuKeyboard() {
     .text(i18n.t("citiesStats"), CB.ADMIN_CITIES)
     .row()
     .text(i18n.t("exportData"), CB.ADMIN_EXPORT);
-  return keyboard;
-}
-
-function createSearchResultsKeyboard(query: string) {
-  const keyboard = new InlineKeyboard();
-  const filtered = cities.filter(city =>
-    city.toLowerCase().includes(query.toLowerCase())
-  ).slice(0, 20);
-  if (filtered.length === 0) return null;
-  for (let i = 0; i < filtered.length; i += 2) {
-    keyboard.text(filtered[i], CB.CITY(filtered[i]));
-    if (i + 1 < filtered.length) {
-      keyboard.text(filtered[i + 1], CB.CITY(filtered[i + 1]));
-    }
-    keyboard.row();
-  }
-  keyboard.text(i18n.t("backToCities"), CB.BACK_TO_CITIES);
   return keyboard;
 }
 
@@ -100,48 +70,78 @@ export default function setup(bot: Bot) {
       );
       return;
     }
-    await ctx.reply(i18n.t("welcome"), { reply_markup: createTopCitiesKeyboard() });
+    await ctx.reply(i18n.t("enterCityName"));
   });
 
-  bot.callbackQuery(/^city:(.+)$/, async (ctx) => {
-    const city = ctx.match[1];
-    if (!cities.includes(city)) {
-      await ctx.answerCallbackQuery({ text: i18n.t("invalidCity") });
-      return;
-    }
-    await handleCitySelection(ctx, city);
-    await ctx.answerCallbackQuery({ text: i18n.t("citySelected", { city }) });
+  bot.callbackQuery(/^typo:yes:(.+):(.+)$/, async (ctx) => {
+    const original = ctx.match[1];
+    const suggested = ctx.match[2];
+    await handleCitySelection(ctx, suggested);
+    await ctx.answerCallbackQuery({ text: i18n.t("citySaved", { city: suggested }) });
   });
 
-  bot.callbackQuery(CB.SEARCH, async (ctx) => {
-    await ctx.editMessageText(i18n.t("searchCity"));
-    await ctx.answerCallbackQuery();
-  });
-
-  bot.callbackQuery(CB.BACK_TO_CITIES, async (ctx) => {
-    await ctx.editMessageText(i18n.t("selectCity"), {
-      reply_markup: createTopCitiesKeyboard()
-    });
-    await ctx.answerCallbackQuery();
+  bot.callbackQuery(/^typo:no:(.+)$/, async (ctx) => {
+    const original = ctx.match[1];
+    await handleCitySelection(ctx, original);
+    await ctx.answerCallbackQuery({ text: i18n.t("citySaved", { city: original }) });
   });
 
   bot.on("message:text", async (ctx) => {
     if (!ctx.from || ctx.message.text.startsWith("/")) return;
     if (storage.isRegistered(ctx.from.id)) return;
-    const query = ctx.message.text.trim();
-    if (query.length < 2) {
+
+    const input = ctx.message.text.trim();
+    if (input.length < 2) {
       await ctx.reply(i18n.t("enterMinChars"));
       return;
     }
-    const keyboard = createSearchResultsKeyboard(query);
-    if (!keyboard) {
+
+    // Check for exact match first
+    const exactMatch = cities.find(city => city.toLowerCase() === input.toLowerCase());
+    if (exactMatch) {
+      const registration = storage.register(ctx.from.id, exactMatch, {
+        username: ctx.from.username,
+        firstName: ctx.from.first_name,
+        lastName: ctx.from.last_name,
+      });
       await ctx.reply(
-        i18n.t("noResults", { query }),
-        { reply_markup: new InlineKeyboard().text(i18n.t("backToCities"), CB.BACK_TO_CITIES) }
+        i18n.t("registrationComplete", {
+          city: exactMatch,
+          time: new Date(registration.registeredAt).toLocaleString()
+        }),
+        { parse_mode: "Markdown" }
       );
       return;
     }
-    await ctx.reply(i18n.t("searchResults", { query }), { reply_markup: keyboard });
+
+    // Check for typos
+    const closest = findClosestCity(input, cities);
+    if (closest) {
+      const keyboard = new InlineKeyboard()
+        .text(i18n.t("yesImeant", { city: closest.city }), CB.CONFIRM_TYPO(input, closest.city))
+        .row()
+        .text(i18n.t("noKeepMine", { city: input }), CB.KEEP_ORIGINAL(input));
+
+      await ctx.reply(
+        i18n.t("didYouMean", { input, suggested: closest.city }),
+        { reply_markup: keyboard }
+      );
+      return;
+    }
+
+    // No match found, save what user typed
+    const registration = storage.register(ctx.from.id, input, {
+      username: ctx.from.username,
+      firstName: ctx.from.first_name,
+      lastName: ctx.from.last_name,
+    });
+    await ctx.reply(
+      i18n.t("registrationComplete", {
+        city: input,
+        time: new Date(registration.registeredAt).toLocaleString()
+      }),
+      { parse_mode: "Markdown" }
+    );
   });
 
   bot.command("admin", async (ctx) => {
