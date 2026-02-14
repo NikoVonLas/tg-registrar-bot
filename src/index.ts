@@ -17,9 +17,6 @@ function isAdmin(userId: number): boolean {
     adminIds.push(...process.env.BOT_ADMIN_IDS.split(',').map(id => id.trim()));
   }
 
-  // Legacy: single admin via ADMIN_USER_ID
-  if (process.env.ADMIN_USER_ID) adminIds.push(process.env.ADMIN_USER_ID);
-
   return adminIds.includes(userId.toString());
 }
 
