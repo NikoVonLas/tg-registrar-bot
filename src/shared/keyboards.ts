@@ -1,5 +1,5 @@
 import { InlineKeyboard } from "grammy";
-import { i18n } from "@/i18n";
+import { i18n } from "@/utils/sdk-helpers";
 import { CB } from "@/shared/callbacks";
 import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
 import { Event } from "@/storage";

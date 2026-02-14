@@ -1,6 +1,5 @@
 import { Bot, InputFile } from "grammy";
-import { i18n } from "@/i18n";
-import { log } from "@/utils/sdk-helpers";
+import { i18n, log } from "@/utils/sdk-helpers";
 import { isAdmin } from "@/shared/auth";
 import { CB } from "@/shared/callbacks";
 import { createEventListKeyboard, createEventDetailsKeyboard } from "@/shared/keyboards";

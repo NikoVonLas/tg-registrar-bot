@@ -1,7 +1,6 @@
 import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
-import { log } from '@/utils/sdk-helpers';
-import { i18n } from '@/i18n';
+import { i18n, log } from '@/utils/sdk-helpers';
 
 /**
  * Generate QR code as PDF with high-resolution PNG

@@ -1,6 +1,5 @@
 import { Bot } from "grammy";
-import { i18n } from "@/i18n";
-import { log } from "@/utils/sdk-helpers";
+import { i18n, log } from "@/utils/sdk-helpers";
 
 export function registerErrorHandler(bot: Bot) {
   bot.catch((err) => {

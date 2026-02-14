@@ -1,6 +1,5 @@
 import { Bot } from "grammy";
-import { i18n } from "@/i18n";
-import { log } from "@/utils/sdk-helpers";
+import { i18n, log } from "@/utils/sdk-helpers";
 import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
 import { UserStateManager } from "@/shared/state";
 import { isAdmin } from "@/shared/auth";

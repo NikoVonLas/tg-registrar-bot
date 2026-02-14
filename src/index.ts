@@ -1,7 +1,6 @@
 import { Bot } from "grammy";
 import { getSDK } from "@/sdk";
 import { log } from "@/utils/sdk-helpers";
-import { i18n } from "@/i18n";
 import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "@/storage";
 import { UserStateManager } from "@/shared/state";
 import { registerHelpHandler } from "@/handlers/help";
@@ -18,11 +17,6 @@ const attemptStorage = new RegistrationAttemptStorage();
 const stateManager = new UserStateManager();
 
 export default function setup(bot: Bot) {
-  // Initialize i18n language from SDK
-  getSDK().then(sdk => {
-    i18n.setLanguage(sdk.config.language || 'ru-RU');
-  });
-
   log.info('Setting up bot handlers...');
 
   // Register all handlers

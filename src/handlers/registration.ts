@@ -1,6 +1,5 @@
 import { Bot, Context, InputFile } from "grammy";
-import { i18n } from "@/i18n";
-import { log } from "@/utils/sdk-helpers";
+import { i18n, log } from "@/utils/sdk-helpers";
 import { CB } from "@/shared/callbacks";
 import { createTypoCorrectionKeyboard } from "@/shared/keyboards";
 import { RegistrationStorage, EventStorage, RegistrationAttemptStorage } from "@/storage";
