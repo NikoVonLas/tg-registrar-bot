@@ -30,17 +30,22 @@
   "bot": {
     "type": "telegram",
     "env": {
+      "BOT_TOKEN": {
+        "required": true,
+        "description": "Telegram bot token"
+      },
       "LANGUAGE": {
         "required": false,
-        "description": "Bot interface language (en-US or ru-RU)",
-        "default": "ru-RU",
-        "configKey": "language"
+        "description": "Bot language (e.g. ru-RU)",
+        "default": "en-US"
       },
       "DEBUG": {
         "required": false,
-        "description": "Enable debug logging (true/false)",
-        "default": "false",
-        "configKey": "debug"
+        "description": "Enable debug logging"
+      },
+      "EXTRA_ADMIN_IDS": {
+        "required": false,
+        "description": "Comma-separated extra admin Telegram IDs"
       }
     },
     "os-packages": []
