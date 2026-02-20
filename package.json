@@ -30,18 +30,13 @@
   "bot": {
     "type": "telegram",
     "env": {
-      "LANGUAGE": {
-        "required": false,
-        "description": "Bot interface language (en-US or ru-RU)",
-        "default": "ru-RU",
-        "configKey": "language"
-      },
-      "DEBUG": {
-        "required": false,
-        "description": "Enable debug logging (true/false)",
-        "default": "false",
-        "configKey": "debug"
-      }
+      "required": [
+        "BOT_TOKEN"
+      ],
+      "optional": [
+        "LANGUAGE",
+        "DEBUG"
+      ]
     },
     "os-packages": []
   }
