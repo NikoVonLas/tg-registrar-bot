@@ -4,6 +4,10 @@ export const CB = {
   CONFIRM_TYPO: (original: string, suggested: string) => `typo:yes:${original}:${suggested}`,
   KEEP_ORIGINAL: (original: string) => `typo:no:${original}`,
 
+  // Admin start menu
+  ADMIN_PANEL: 'admin_panel',
+  HELP: 'help',
+
   // Event list navigation
   EVENT_LIST: 'event_list',
   EVENT_LIST_PAGE: (page: number) => `event_list:${page}`,

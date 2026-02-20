@@ -1,10 +1,12 @@
 import { Bot } from "grammy";
 import { i18n, log } from "@/utils/sdk-helpers";
+import { CB } from "@/shared/callbacks";
 
 export function registerHelpHandler(bot: Bot) {
-  // Handle reply keyboard button "Помощь"
-  bot.hears("❓ Помощь", async (ctx) => {
+  // Handle inline button "Помощь"
+  bot.callbackQuery(CB.HELP, async (ctx) => {
     log.info('Help button pressed:', { userId: ctx.from?.id });
+    await ctx.answerCallbackQuery();
     await ctx.reply(i18n.t("help"));
   });
 
