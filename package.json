@@ -30,10 +30,6 @@
   "bot": {
     "type": "telegram",
     "env": {
-      "BOT_TOKEN": {
-        "required": true,
-        "description": "Telegram bot token"
-      },
       "LANGUAGE": {
         "required": false,
         "description": "Bot language (e.g. ru-RU)",
