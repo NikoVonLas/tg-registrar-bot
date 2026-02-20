@@ -3,7 +3,7 @@ import { i18n, log } from "@/utils/sdk-helpers";
 import { EventStorage, RegistrationStorage, RegistrationAttemptStorage } from "@/storage";
 import { UserStateManager } from "@/shared/state";
 import { isAdmin } from "@/shared/auth";
-import { createEventListKeyboard, createAdminReplyKeyboard } from "@/shared/keyboards";
+import { createEventListKeyboard, createAdminInlineKeyboard } from "@/shared/keyboards";
 
 export function registerStartHandler(
   bot: Bot,
@@ -27,7 +27,7 @@ export function registerStartHandler(
         userId: ctx.from.id
       });
       await ctx.reply("👋 Привет, админ! Используй кнопки ниже:", {
-        reply_markup: createAdminReplyKeyboard()
+        reply_markup: createAdminInlineKeyboard()
       });
       return;
     }
